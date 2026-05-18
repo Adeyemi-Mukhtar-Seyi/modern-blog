@@ -1,6 +1,6 @@
-import Comment from '../models/commentModel.js';
+const Comment = require('../models/commentModel');
 
-export const createComment = async (req, res) => {
+const createComment = async (req, res) => {
   try {
     const { postId, content, quotedComment } = req.body;
 
@@ -30,7 +30,7 @@ export const createComment = async (req, res) => {
   }
 };
 
-export const getPostComments = async (req, res) => {
+const getPostComments = async (req, res) => {
   try {
     const page = Number(req.query.page) || 1;
 
@@ -70,7 +70,7 @@ export const getPostComments = async (req, res) => {
   }
 };
 
-export const toggleLikeComment = async (req, res) => {
+const toggleLikeComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
 
@@ -110,7 +110,7 @@ res.json(updatedComment);
   }
 };
 
-export const toggleDislikeComment = async (req, res) => {
+const toggleDislikeComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
 
@@ -148,4 +148,11 @@ res.json(updatedComment);
       message: error.message,
     });
   }
+};
+
+module.exports = {
+  createComment,
+  getPostComments,
+  toggleLikeComment,
+  toggleDislikeComment,
 };

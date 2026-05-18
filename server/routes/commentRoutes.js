@@ -1,21 +1,22 @@
-import express from 'express';
-import {
+const express = require('express');
+
+const {
   createComment,
   getPostComments,
   toggleLikeComment,
   toggleDislikeComment,
-} from '../controllers/commentController.js';
+} = require('../controllers/commentController');
 
-import { protect } from '../middleware/authMiddleware.js';
+const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
 router.get('/:postId', getPostComments);
 
-router.post('/', protect, createComment);
+router.post('/', auth, createComment);
 
-router.put('/:id/like', protect, toggleLikeComment);
+router.put('/:id/like', auth, toggleLikeComment);
 
-router.put('/:id/dislike', protect, toggleDislikeComment);
+router.put('/:id/dislike', auth, toggleDislikeComment);
 
-export default router;
+module.exports = router;

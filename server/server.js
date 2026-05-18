@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-import commentRoutes from './routes/commentRoutes.js';
+const commentRoutes = require('./routes/commentRoutes');
 
 // Import routes
 const authRoutes = require('./routes/auth');

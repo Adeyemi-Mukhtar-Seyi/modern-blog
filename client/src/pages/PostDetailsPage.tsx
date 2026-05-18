@@ -11,7 +11,7 @@ const PostDetailsPage = () => {
 
   const navigate = useNavigate();
   const user = JSON.parse(
-    localStorage.getItem('user') || 'null'
+    localStorage.getItem('currentUser') || 'null'
   );
 
   const [post, setPost] =
@@ -76,10 +76,7 @@ const PostDetailsPage = () => {
           </span>
         </div>
 
-        <CommentSection
-        postId={post._id}
-        user={user}
-/>
+        
 
         <div className="text-lg leading-8 text-gray-800 whitespace-pre-wrap">
           {post.content}
@@ -94,6 +91,12 @@ const PostDetailsPage = () => {
             Back Home
           </button>
         </div>
+        {post?._id && (
+        <CommentSection
+            postId={post._id}
+            user={user}
+        />
+        )}
       </div>
     </div>
   );
