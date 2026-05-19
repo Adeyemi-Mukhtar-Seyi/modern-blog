@@ -5,6 +5,15 @@ const upload = require('../middleware/upload');
 
 const router = express.Router();
 
+const {
+  getPostsByCategory,
+} = require('../controllers/postController');
+
+const {
+  searchPosts,
+} = require('../controllers/postController');
+
+
 // Get all posts (with pagination)
 router.get('/', async (req, res) => {
   try {
@@ -100,7 +109,12 @@ router.get('/:slug', async (req, res) => {
 // Create new post (Admin only)
 router.post('/', adminAuth, upload.single('media'), async (req, res) => {
   try {
-    const { title, content, mediaType, tags } = req.body;
+    const { title,
+    content,
+    category,
+    subcategory,
+    mediaType,
+    tags, } = req.body;
     
     let mediaUrl = null;
     let mediaPath = null;
@@ -115,15 +129,24 @@ router.post('/', adminAuth, upload.single('media'), async (req, res) => {
   .replace(/[^a-z0-9\s-]/g, '')
   .replace(/\s+/g, '-');
 
-  const post = new Post({
+    const post = new Post({
     title,
     slug,
     content,
+
+    category,
+    subcategory,
+
     author: req.user._id,
+
     mediaType: mediaType || 'none',
+
     mediaUrl,
     mediaPath,
-    tags: tags ? tags.split(',').map(tag => tag.trim()) : []
+
+    tags: tags
+      ? tags.split(',').map(tag => tag.trim())
+      : [],
   });
 
     await post.save();
@@ -257,5 +280,9 @@ router.put('/:id/like', auth, async (req, res) => {
 });
 
 
+router.get(
+  '/category/:category',
+  getPostsByCategory
+);
 
 module.exports = router;

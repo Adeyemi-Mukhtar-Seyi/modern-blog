@@ -13,6 +13,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import PostDetailsPage from './pages/PostDetailsPage';
+import CategoryPage from './pages/CategoryPage';
 
 import type { Post } from './types';
 
@@ -100,10 +101,14 @@ const App = () => {
         <Routes>
 
           <Route
+            path="/category/:slug"
+            element={<CategoryPage />}
+          />
+
+          <Route
             path="/"
             element={
               <HomePage
-                posts={posts}
                 currentPage={currentPostPage}
                 postsPerPage={postsPerPage}
                 onPageChange={

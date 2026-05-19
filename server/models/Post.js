@@ -57,6 +57,15 @@ const postSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  category: {
+  type: String,
+  required: true,
+  },
+
+  subcategory: {
+    type: String,
+    required: true,
+  },
 }, {
   timestamps: true
 });
@@ -85,6 +94,13 @@ postSchema.pre(/^find/, function(next) {
     select: 'username email avatar'
   });
   next();
+});
+
+postSchema.index({
+  title: 'text',
+  content: 'text',
+  category: 'text',
+  subcategory: 'text',
 });
 
 module.exports = mongoose.model('Post', postSchema);
