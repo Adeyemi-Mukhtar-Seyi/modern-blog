@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from "../api/axios";
+import { useAuth } from '../context/AuthContext';
 
 
 type Credentials = {
@@ -8,17 +9,10 @@ type Credentials = {
   password: string;
 };
 
-type UserData = {
-  username: string;
-  password: string;
-  email?: string;
-};
 
-type LoginPageProps = {
-  setUser: Function;
-}
 
-const LoginPage = ({ setUser }: LoginPageProps) => {
+const LoginPage = () => {  
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
@@ -37,14 +31,7 @@ const LoginPage = ({ setUser }: LoginPageProps) => {
       console.log("LOGIN RESPONSE:", data);
       console.log("STATUS:", response.status);
 
-     localStorage.setItem("token", data.token);
-
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify(data.user)
-      );
-
-      setUser(data.user);
+      login(data.token, data.user);
 
       navigate("/");
     } catch (error: any) {

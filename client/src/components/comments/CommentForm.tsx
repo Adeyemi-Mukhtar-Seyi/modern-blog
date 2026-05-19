@@ -1,26 +1,42 @@
 import React, { useState } from 'react';
+import { useCreateComment } from '../../hooks/useCommentMutations';
 
 interface Props {
-  onSubmit: (content: string) => void;
-  loading: boolean;
   quotedText?: string;
+
+  quotedCommentId?: string;
+
   clearQuote?: () => void;
+
+  postId: string;
+
+  page: number;
 }
 
+
+
 const CommentForm: React.FC<Props> = ({
-  onSubmit,
-  loading,
   quotedText,
+  quotedCommentId,
   clearQuote,
+  postId,
+  page,
 }) => {
   const [content, setContent] = useState('');
+    const { mutate, isPending } = useCreateComment(
+    postId,
+    page
+    );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!content.trim()) return;
 
-    onSubmit(content);
+    mutate({
+    content,
+    quotedCommentId,
+    });
 
     setContent('');
   };
@@ -53,13 +69,12 @@ const CommentForm: React.FC<Props> = ({
         className="w-full border rounded-lg p-3 min-h-[120px]"
       />
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-3 bg-black text-white px-5 py-2 rounded-lg"
-      >
-        {loading ? 'Posting...' : 'Post Comment'}
-      </button>
+        <button
+            type="submit"
+            disabled={isPending}
+            >
+            {isPending ? 'Posting...' : 'Submit'}
+        </button>
     </form>
   );
 };

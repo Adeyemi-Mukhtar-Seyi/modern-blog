@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Edit3, Trash2 } from "lucide-react";
 import type { Post } from '../types';
 import axiosInstance from "../api/axios";
+import { useAuth } from '../context/AuthContext';
 
 
 type UserData = {
@@ -12,12 +13,12 @@ type UserData = {
 };
 
 type AdminPageProps = {
-  user: UserData | null;
   posts: Post[];
   setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 };
 
-const AdminPage: React.FC<AdminPageProps> = ({ user, posts, setPosts }) => {
+const AdminPage: React.FC<AdminPageProps> = ({ posts, setPosts }) => {
+  const { user } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [postForm, setPostForm] = useState({

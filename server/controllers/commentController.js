@@ -1,4 +1,5 @@
 const Comment = require('../models/commentModel');
+const sanitizeHtml = require('sanitize-html');
 
 const createComment = async (req, res) => {
   try {
@@ -7,7 +8,10 @@ const createComment = async (req, res) => {
     const comment = await Comment.create({
       post: postId,
       user: req.user._id,
-      content,
+      content: sanitizeHtml(content, {
+        allowedTags: [],
+        allowedAttributes: {},
+        }),
       quotedComment: quotedComment || null,
     });
 

@@ -1,0 +1,120 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+
+import {
+  createComment,
+  likeComment,
+  dislikeComment,
+} from '../services/commentService';
+
+export const useCreateComment = (
+  postId: string,
+  page: number
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      content,
+      quotedCommentId,
+    }: {
+      content: string;
+      quotedCommentId?: string;
+    }) =>
+      createComment(postId, content, quotedCommentId),
+
+    onSuccess: () => {
+      toast.success('Comment added');
+
+      queryClient.invalidateQueries({
+        queryKey: ['comments', postId, page],
+      });
+    },
+
+    onError: () => {
+      toast.error('Failed to add comment');
+    },
+  });
+};
+
+
+
+export const useLikeComment = (
+  postId: string,
+  page: number
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: likeComment,
+
+    onMutate: async (commentId: string) => {
+      await queryClient.cancelQueries({
+        queryKey: ['comments', postId, page],
+      });
+
+      const previousData = queryClient.getQueryData([
+        'comments',
+        postId,
+        page,
+      ]);
+
+      queryClient.setQueryData(
+        ['comments', postId, page],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+            comments: oldData.comments.map((comment: any) =>
+              comment._id === commentId
+                ? {
+                    ...comment,
+                    likesCount: comment.likesCount + 1,
+                  }
+                : comment
+            ),
+          };
+        }
+      );
+
+      return { previousData };
+    },
+
+    onError: (_error, _variables, context) => {
+      queryClient.setQueryData(
+        ['comments', postId, page],
+        context?.previousData
+      );
+
+      toast.error('Failed to like comment');
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['comments', postId, page],
+      });
+    },
+  });
+};
+
+export const useDislikeComment = (
+  postId: string,
+  page: number
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: dislikeComment,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['comments', postId, page],
+      });
+    },
+
+    onError: () => {
+      toast.error('Failed to dislike comment');
+    },
+  });
+};

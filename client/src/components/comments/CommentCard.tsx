@@ -2,22 +2,36 @@ import React from 'react';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import type { Comment } from '../../types/comment';
 
+import {
+  useLikeComment,
+  useDislikeComment,
+} from '../../hooks/useCommentMutations';
+
 interface Props {
   comment: Comment;
+
   userId?: string;
 
-  onLike: (id: string) => void;
-  onDislike: (id: string) => void;
+  postId: string;
+
+  page: number;
+
   onQuote: (comment: Comment) => void;
 }
 
 const CommentCard: React.FC<Props> = ({
   comment,
   userId,
-  onLike,
-  onDislike,
+  postId,
+  page,
   onQuote,
 }) => {
+
+    const { mutate: likeMutate } =
+    useLikeComment(postId, page);
+
+    const { mutate: dislikeMutate } =
+    useDislikeComment(postId, page);
   const liked = comment.likes.includes(userId || '');
 
   const disliked = comment.dislikes.includes(userId || '');
@@ -63,7 +77,7 @@ const CommentCard: React.FC<Props> = ({
 
       <div className="flex items-center gap-4 flex-wrap">
         <button
-          onClick={() => onLike(comment._id)}
+          onClick={() => likeMutate(comment._id)}
           className={`flex items-center gap-1 ${
             liked ? 'text-green-600' : ''
           }`}
@@ -74,7 +88,7 @@ const CommentCard: React.FC<Props> = ({
         </button>
 
         <button
-          onClick={() => onDislike(comment._id)}
+          onClick={() => dislikeMutate(comment._id)}
           className={`flex items-center gap-1 ${
             disliked ? 'text-red-600' : ''
           }`}

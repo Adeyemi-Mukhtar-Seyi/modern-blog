@@ -1,19 +1,16 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import Header from '../components/Header';
 import MediaRenderer from '../components/MediaRenderer';
 import type { Post } from '../types';
 import axiosInstance from "../api/axios";
 import CommentSection from '../components/comments/CommentSection';
+import { useAuth } from '../context/AuthContext';
 
 const PostDetailsPage = () => {
   const { slug } = useParams();
 
   const navigate = useNavigate();
-  const user = JSON.parse(
-    localStorage.getItem('currentUser') || 'null'
-  );
-
+  const { user } = useAuth();
   const [post, setPost] =
     useState<Post | null>(null);
 
@@ -32,7 +29,7 @@ const PostDetailsPage = () => {
       } catch (error) {
         console.log(error);
       }
-    };
+  };
 
     fetchPost();
   }, [slug]);
@@ -82,7 +79,7 @@ const PostDetailsPage = () => {
           {post.content}
         </div>
 
-        {/* BACK BUTTON */}
+        
         <div className="mt-12">
           <button
             onClick={() => navigate('/')}
@@ -98,8 +95,9 @@ const PostDetailsPage = () => {
         />
         )}
       </div>
-    </div>
-  );
+     </div>
+    );
+
 };
 
 export default PostDetailsPage;
