@@ -28,7 +28,7 @@ const CommentCard: React.FC<Props> = ({
 }) => {
 
     const { mutate: likeMutate } =
-    useLikeComment(postId, page);
+    useLikeComment(postId, page, userId);
 
     const { mutate: dislikeMutate } =
     useDislikeComment(postId, page);

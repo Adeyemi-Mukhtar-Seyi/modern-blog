@@ -41,7 +41,8 @@ export const useCreateComment = (
 
 export const useLikeComment = (
   postId: string,
-  page: number
+  page: number,
+  userId?: string
 ) => {
   const queryClient = useQueryClient();
 
@@ -61,6 +62,7 @@ export const useLikeComment = (
 
       queryClient.setQueryData(
         ['comments', postId, page],
+        
         (oldData: any) => {
           if (!oldData) return oldData;
 
@@ -70,8 +72,25 @@ export const useLikeComment = (
               comment._id === commentId
                 ? {
                     ...comment,
-                    likesCount: comment.likesCount + 1,
-                  }
+
+                    likesCount: comment.likes.includes(
+                        userId
+                    )
+                        ? comment.likesCount - 1
+                        : comment.likesCount + 1,
+
+                    likes: comment.likes.includes(
+                        userId
+                    )
+                        ? comment.likes.filter(
+                            (id: string) =>
+                            id !== userId
+                        )
+                        : [
+                            ...comment.likes,
+                            userId || '',
+                        ],
+                    }
                 : comment
             ),
           };

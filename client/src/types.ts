@@ -7,6 +7,7 @@ export type Post = {
   likesCount?: number;
 
   slug: string;
+  
 
   author?: {
     username: string;
