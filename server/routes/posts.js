@@ -81,6 +81,16 @@ router.get('/admin/all', adminAuth, async (req, res) => {
 }
 });
 
+router.get(
+  '/search/all',
+  searchPosts
+);
+
+router.get(
+  '/category/:category',
+  getPostsByCategory
+);
+
 // Get single post by slug
 router.get('/:slug', async (req, res) => {
   try {
@@ -279,10 +289,5 @@ router.put('/:id/like', auth, async (req, res) => {
   }
 });
 
-
-router.get(
-  '/category/:category',
-  getPostsByCategory
-);
 
 module.exports = router;

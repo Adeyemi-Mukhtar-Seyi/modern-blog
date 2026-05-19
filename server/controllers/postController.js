@@ -24,8 +24,8 @@ exports.searchPosts = async (req, res) => {
   try {
     const {
       search = '',
-      category,
-      subcategory,
+      category = '',
+      subcategory = '',
       page = 1,
       limit = 10,
     } = req.query;
