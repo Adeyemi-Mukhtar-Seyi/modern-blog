@@ -31,14 +31,23 @@ const Header = () => {
           Home
         </button>
 
-        {user && (
-          <button
-            onClick={() => navigate('/admin')}
-            className="font-medium text-black hover:text-orange-500"
-          >
-            Admin
-          </button>
-        )}
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="font-medium text-black hover:text-orange-500"
+            >
+              Admin
+            </button>
+          )}
+
+          {user && (
+            <button
+              onClick={() => navigate('/create-post')}
+              className="font-medium text-black hover:text-orange-500"
+            >
+              Create Post
+            </button>
+          )}
 
         {user ? (
           <div className="flex items-center space-x-4">

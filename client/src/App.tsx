@@ -17,6 +17,7 @@ import type { Post } from './types';
 import axiosInstance from './api/axios';
 import { useAuth } from './context/AuthContext';
 import AdminRoute from './components/AdminRoute';
+import CreatePostPage from './pages/CreatePostPage';
 
 type UserData = {
   username: string;
@@ -159,8 +160,16 @@ const App = () => {
               </AdminRoute>
             }
           />
-
+          <Route
+            path="/create-post"
+            element={
+              <ProtectedRoute>
+                <CreatePostPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
+        
       </main>
     </div>
   );
