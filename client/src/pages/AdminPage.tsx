@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Edit3, Trash2 } from "lucide-react";
 import type { Post } from '../types';
 import axiosInstance from "../api/axios";
-import { useAuth } from '../context/AuthContext';
 
 
 type UserData = {
@@ -18,16 +17,6 @@ type AdminPageProps = {
 };
 
 const AdminPage: React.FC<AdminPageProps> = ({ posts, setPosts }) => {
-  const { user } = useAuth();
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [postForm, setPostForm] = useState({
-    title: "",
-    content: "",
-    mediaType: "image" as "image" | "video" | "audio" | "none",
-    mediaUrl: "",
-    mediaFile: null as File | null,
-  });
 
   const truncateText = (text: string, maxLength = 100) =>
     text.length <= maxLength ? text : text.substr(0, maxLength) + "...";
@@ -35,101 +24,6 @@ const AdminPage: React.FC<AdminPageProps> = ({ posts, setPosts }) => {
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString();
 
-  // CREATE
-  const handleCreatePost = async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      const formData = new FormData();
-
-      formData.append("title", postForm.title);
-      formData.append("content", postForm.content);
-      formData.append("mediaType", postForm.mediaType);
-
-      if (postForm.mediaFile) {
-        formData.append("media", postForm.mediaFile);
-      }
-
-      try {
-        const response = await axiosInstance.post(
-          "/posts",
-          formData
-        );
-
-        const data = response.data;
-
-        setPosts([data.post, ...posts]);
-
-        setPostForm({
-          title: "",
-          content: "",
-          mediaType: "image",
-          mediaUrl: "",
-          mediaFile: null,
-        });
-
-        setShowCreateForm(false);
-
-      } catch (err: any) {
-        console.error("Create failed:", err);
-
-        alert(
-          err.response?.data?.message ||
-          "Failed to create post"
-        );
-      }
-    };
-
-  // UPDATE
-  const handleUpdatePost = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!editingPost) return;
-
-  const formData = new FormData();
-
-  formData.append("title", postForm.title);
-  formData.append("content", postForm.content);
-  formData.append("mediaType", postForm.mediaType);
-
-  if (postForm.mediaFile) {
-    formData.append("media", postForm.mediaFile);
-  }
-
-  try {
-    const response = await axiosInstance.put(
-      `/posts/${editingPost._id}`,
-      formData
-    );
-
-    const data = response.data;
-
-    setPosts(
-      posts.map((p) =>
-        p._id === data.post._id
-          ? data.post
-          : p
-      )
-    );
-
-    setEditingPost(null);
-
-    setPostForm({
-      title: "",
-      content: "",
-      mediaType: "image",
-      mediaUrl: "",
-      mediaFile: null,
-    });
-
-  } catch (err: any) {
-    console.error("Update failed:", err);
-
-    alert(
-      err.response?.data?.message ||
-      "Failed to update post"
-    );
-  }
-};
   // DELETE
     const handleDeletePost = async (
     postId: string
@@ -163,82 +57,6 @@ const AdminPage: React.FC<AdminPageProps> = ({ posts, setPosts }) => {
     <div className="max-w-4xl mx-auto px-4 py-8">
     <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
-    <form
-      onSubmit={editingPost ? handleUpdatePost : handleCreatePost}
-      className="bg-white p-6 rounded-lg shadow-md space-y-4"
-    >
-      <input
-        type="text"
-        placeholder="Post title"
-        value={postForm.title}
-        onChange={(e) =>
-        setPostForm({ ...postForm, title: e.target.value })
-        }
-        className="w-full border p-3 rounded-lg"
-        required
-      />
-
-      <textarea
-        placeholder="Post content"
-        value={postForm.content}
-        onChange={(e) =>
-          setPostForm({ ...postForm, content: e.target.value })
-        }
-        className="w-full border p-3 rounded-lg h-40"
-        required
-      />
-
-      <select
-        value={postForm.mediaType}
-        onChange={(e) =>
-          setPostForm({
-            ...postForm,
-            mediaType: e.target.value as "image" | "video" | "audio" | "none",
-          })
-        }
-        className="w-full border p-3 rounded-lg"
-      >
-        <option value="">Select media type</option>
-        <option value="image">Image</option>
-        <option value="video">Video</option>
-        <option value="audio">Audio</option>
-      </select>
-
-      <input
-        type="text"
-        placeholder="Media URL"
-        value={postForm.mediaUrl}
-        onChange={(e) =>
-          setPostForm({ ...postForm, mediaUrl: e.target.value })
-        }
-        className="w-full border p-3 rounded-lg"
-      />
-
-      <input
-        type="file"
-        accept={
-          postForm.mediaType === "image"
-            ? "image/*"
-            : postForm.mediaType === "video"
-            ? "video/*"
-            : "audio/*"
-        }
-        onChange={(e) =>
-          setPostForm({
-            ...postForm,
-            mediaFile: e.target.files?.[0] || null,
-          })
-        }
-        className="w-full border p-3 rounded-lg"
-      />
-
-      <button
-        type="submit"
-        className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600"
-      >
-       {editingPost ? "Update Post" : "Create Post"}
-      </button>
-    </form>
     <div className="mt-10 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-black">Manage Posts</h3>
@@ -275,17 +93,11 @@ const AdminPage: React.FC<AdminPageProps> = ({ posts, setPosts }) => {
             <div className="flex space-x-2 ml-4">
               <button
                 onClick={() => {
-                  setEditingPost(post);
-
-                  setPostForm({
-                    title: post.title,
-                    content: post.content,
-                    mediaType: (post.mediaType as "image" | "video" | "audio" | "none") || "image",
-                    mediaUrl: post.mediaUrl || '',
-                    mediaFile: null,
-                  });
-
-                  setShowCreateForm(true);
+                  <button
+                    className="p-2 text-orange-500 hover:bg-orange-50 rounded-lg"
+                  >
+                    <Edit3 size={18} />
+                  </button>
                 }}
                 className="p-2 text-orange-500 hover:bg-orange-50 rounded-lg"
               >
