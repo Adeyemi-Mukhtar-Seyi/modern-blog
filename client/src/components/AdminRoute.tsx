@@ -2,20 +2,19 @@ import { Navigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({
+const AdminRoute = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
 
-  const { token } = useAuth();
+  const { user, token } = useAuth();
 
-  // ANY AUTHENTICATED USER
-  if (!token) {
+  if (!token || user?.role !== 'admin') {
     return <Navigate to="/login" replace />;
   }
 
   return children;
 };
 
-export default ProtectedRoute;
+export default AdminRoute;

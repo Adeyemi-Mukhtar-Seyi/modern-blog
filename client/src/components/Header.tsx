@@ -31,7 +31,7 @@ const Header = () => {
           Home
         </button>
 
-        {user?.role === 'admin' && (
+        {user && (
           <button
             onClick={() => navigate('/admin')}
             className="font-medium text-black hover:text-orange-500"

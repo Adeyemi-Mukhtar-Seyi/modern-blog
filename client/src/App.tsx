@@ -3,7 +3,6 @@ import {
   Route,
 } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
-
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -14,12 +13,10 @@ import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 import PostDetailsPage from './pages/PostDetailsPage';
 import CategoryPage from './pages/CategoryPage';
-
 import type { Post } from './types';
-
 import axiosInstance from './api/axios';
-
 import { useAuth } from './context/AuthContext';
+import AdminRoute from './components/AdminRoute';
 
 type UserData = {
   username: string;
@@ -154,12 +151,12 @@ const App = () => {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminPage
-                posts={posts}
-                setPosts={setPosts}
-              />
-              </ProtectedRoute>
+                  posts={posts}
+                  setPosts={setPosts}
+                />
+              </AdminRoute>
             }
           />
 
