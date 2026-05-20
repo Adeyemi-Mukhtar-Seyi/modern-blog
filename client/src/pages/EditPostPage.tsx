@@ -55,7 +55,7 @@ const EditPostPage = () => {
 
         const response =
           await axiosInstance.get(
-            `/posts/${id}`
+            `/posts/edit/${id}`
           );
 
         const post = response.data;
