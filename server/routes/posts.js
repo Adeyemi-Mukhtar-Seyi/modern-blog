@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
 
     const posts = await Post.find({ status: 'published' })
-    .populate('author', 'username')
+    .populate('author', 'username role')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -57,7 +57,7 @@ router.get('/admin/all', adminAuth, async (req, res) => {
     const skip = (page - 1) * limit;
 
     const posts = await Post.find()
-    .populate('author', 'username')
+    .populate('author', 'username role')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -97,7 +97,7 @@ router.get('/:slug', async (req, res) => {
     const post = await Post.findOne({
       slug: req.params.slug,
       status: 'published',
-    }).populate('author', 'username');
+    }).populate('author', 'username role');;
     
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
@@ -120,7 +120,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // Create new post (Admin only)
-router.post('/', adminAuth, upload.single('media'), async (req, res) => {
+router.post('/', auth, upload.single('media'), async (req, res) => {
   try {
     const { title,
     content,
@@ -177,52 +177,94 @@ router.post('/', adminAuth, upload.single('media'), async (req, res) => {
 
 
 // Update post (Admin only)
-router.put('/:id', adminAuth, upload.single('media'), async (req, res) => {
+router.put('/:id', auth, upload.single('media'), async (req, res) => {
   try {
     const { title, content, mediaType, tags, status } = req.body;
     
     const post = await Post.findById(req.params.id);
+
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return res.status(404).json({
+        message: 'Post not found'
+      });
     }
 
-    // Update fields
+    // OWNER CHECK
+    const isOwner =
+      post.author.toString() === req.user._id.toString();
+
+    // ADMIN CHECK
+    const isAdmin =
+      req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        message: 'Not authorized to update this post'
+      });
+    }
+
     if (title) post.title = title;
     if (content) post.content = content;
     if (mediaType) post.mediaType = mediaType;
     if (status) post.status = status;
-    if (tags) post.tags = tags.split(',').map(tag => tag.trim());
 
-    // Handle new media upload
+    if (tags) {
+      post.tags = tags
+        .split(',')
+        .map(tag => tag.trim());
+    }
+
     if (req.file) {
-      // Delete old media file if exists
-      if (post.mediaPath && require('fs').existsSync(post.mediaPath)) {
+      if (
+        post.mediaPath &&
+        require('fs').existsSync(post.mediaPath)
+      ) {
         require('fs').unlinkSync(post.mediaPath);
       }
-      
+
       post.mediaPath = req.file.path;
-      post.mediaUrl = `${req.protocol}://${req.get('host')}/${req.file.path.replace(/\\/g, '/')}`;
+
+      post.mediaUrl =
+        `${req.protocol}://${req.get('host')}/${req.file.path.replace(/\\/g, '/')}`;
     }
 
     await post.save();
-    res.json({ message: 'Post updated successfully', post });
-  } catch (error) {
-  console.log("CREATE POST ERROR:");
-  console.log(error);
 
-  res.status(500).json({
-    message: 'Error creating post',
-    error: error.message
-  });
-}
+    res.json({
+      message: 'Post updated successfully',
+      post
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Error updating post',
+      error: error.message
+    });
+  }
 });
 
 // Delete post (Admin only)
-router.delete('/:id', adminAuth, async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // OWNER CHECK
+    const isOwner =
+      post.author.toString() === req.user._id.toString();
+
+    // ADMIN CHECK
+    const isAdmin =
+      req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        message: 'Not authorized to delete this post'
+      });
     }
 
     // Delete associated media file
@@ -277,7 +319,7 @@ router.put('/:id/like', auth, async (req, res) => {
     await post.save();
 
     const updatedPost = await Post.findById(post._id)
-      .populate('author', 'username');
+      .populate('author', 'username role');;
 
     res.json({
       message: alreadyLiked ? 'Post unliked' : 'Post liked',

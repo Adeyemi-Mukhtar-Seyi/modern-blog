@@ -22,7 +22,9 @@ const PostCard = ({
 }: PostCardProps) => {
 
   const navigate = useNavigate();
-
+  
+  
+  
   const { user } = useAuth();
   // LOCAL STATE
   const [likes, setLikes] = useState<string[]>(
@@ -32,6 +34,27 @@ const PostCard = ({
   const [likesCount, setLikesCount] = useState<number>(
     post.likesCount || 0
   );
+  
+  const isOwner =
+  user?._id === post.author?._id;
+
+  const isAdmin =
+    user?.role === 'admin';
+
+  const canModify =
+    isOwner || isAdmin;
+
+  const handleDelete = async (
+  id: string
+  ) => {
+    const confirmed = window.confirm(
+      'Delete this post?'
+    );
+
+    if (!confirmed) return;
+
+    console.log('Delete post:', id);
+  };
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString();
@@ -85,6 +108,8 @@ const PostCard = ({
 
       alert('Post link copied!');
     };
+
+  
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
@@ -157,6 +182,25 @@ const PostCard = ({
 
         </div>
       </div>
+      {canModify && (
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() =>
+              navigate(`/edit-post/${post._id}`)
+            }
+            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+          >
+            Edit
+          </button>
+
+          <button
+            onClick={() => handleDelete(post._id)}
+            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      )}
     </div>
   );
 };

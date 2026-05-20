@@ -9,9 +9,11 @@ export type Post = {
   slug: string;
   
 
-  author?: {
-    username: string;
-  };
+  author: {
+  _id: string;
+  username: string;
+  role: string;
+};
   createdAt: string;
 
   mediaType?: string;
