@@ -45,33 +45,33 @@ const CommentCard: React.FC<Props> = ({
   };
 
   return (
-    <div
-      id={`comment-${comment._id}`}
-      className="border rounded-xl p-4 bg-white mb-4"
-    >
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="font-semibold">
-          {comment.user.username}
-        </h4>
+        <div
+        id={`comment-${comment._id}`}
+        className="border rounded-xl p-4 bg-white mb-4"
+        >
+        <div className="flex justify-between items-center mb-2">
+            <h4 className="font-semibold">
+            {comment.user.username}
+            </h4>
 
-        <span className="text-sm text-gray-500">
-          {new Date(comment.createdAt).toLocaleString()}
-        </span>
-      </div>
+            <span className="text-sm text-gray-500">
+            {new Date(comment.createdAt).toLocaleString()}
+            </span>
+        </div>
 
       {comment.quotedComment && (
-        <div className="bg-gray-100 border-l-4 border-gray-400 p-3 mb-3">
-          <p className="text-sm font-semibold">
+        <div className="bg-gray-100 border-l-4 border-gray-400 p-3 mb-3 rounded">
+          <p className="text-sm font-semibold text-black">
             @{comment.quotedComment.user.username}
           </p>
 
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-black mt-1">
             {comment.quotedComment.content}
           </p>
         </div>
       )}
 
-      <p className="mb-4 whitespace-pre-wrap">
+      <p className="text-gray-800 whitespace-pre-wrap mb-4">
         {comment.content}
       </p>
 

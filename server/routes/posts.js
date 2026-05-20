@@ -94,14 +94,17 @@ router.get(
 // Get single post by slug
 router.get('/:slug', async (req, res) => {
   try {
-    const post = await Post.findOne({ slug: req.params.slug, status: 'published' });
+    const post = await Post.findOne({
+      slug: req.params.slug,
+      status: 'published',
+    }).populate('author', 'username');
     
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
     // Increment view count
-    post.views += 1;
+    post.views = (post.views || 0) + 1;
     await post.save();
 
     res.json(post);
@@ -252,6 +255,8 @@ router.put('/:id/like', auth, async (req, res) => {
     }
 
     const userId = req.user._id.toString();
+
+    post.likes = post.likes || [];
 
     const alreadyLiked = post.likes.some(
       (id) => id.toString() === userId

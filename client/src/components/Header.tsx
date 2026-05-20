@@ -3,11 +3,11 @@ import { LogIn, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-type UserData = {
-  username: string;
-  email?: string;
-  role: string
-};
+// type UserData = {
+//   username: string;
+//   email?: string;
+//   role: string
+// };
 
 
 const Header = () => {
@@ -42,7 +42,7 @@ const Header = () => {
 
         {user ? (
           <div className="flex items-center space-x-4">
-            <span className="text-black">Welcome, {user.name}</span>
+            <span className="text-black">Welcome, {user.username}</span>
             <button
               onClick={() => {
                 logout();

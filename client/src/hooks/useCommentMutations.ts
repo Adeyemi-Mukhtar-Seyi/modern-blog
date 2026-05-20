@@ -16,12 +16,12 @@ export const useCreateComment = (
   return useMutation({
     mutationFn: ({
       content,
-      quotedCommentId,
+      quotedComment,
     }: {
       content: string;
-      quotedCommentId?: string;
+      quotedComment?: string;
     }) =>
-      createComment(postId, content, quotedCommentId),
+      createComment(postId, content, quotedComment),
 
     onSuccess: () => {
       toast.success('Comment added');

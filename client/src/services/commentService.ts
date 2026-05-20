@@ -14,12 +14,12 @@ export const getComments = async (
 export const createComment = async (
   postId: string,
   content: string,
-  quotedCommentId?: string
+  quotedComment?: string
 ) => {
   const { data } = await axiosInstance.post('/comments', {
     postId,
     content,
-    quotedCommentId,
+    quotedComment: quotedComment,
   });
 
   return data;

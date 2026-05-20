@@ -59,13 +59,13 @@ const postSchema = new mongoose.Schema({
   },
   category: {
   type: String,
-  required: true,
-  },
+  default: 'General',
+},
 
-  subcategory: {
-    type: String,
-    required: true,
-  },
+subcategory: {
+  type: String,
+  default: 'News',
+},
 }, {
   timestamps: true
 });

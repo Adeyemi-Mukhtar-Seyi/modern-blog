@@ -9,6 +9,7 @@ import type { Comment } from '../../types/comment';
 import { useQuery } from '@tanstack/react-query';
 
 import { getComments } from '../../services/commentService';
+import { useRef } from 'react';
 
 interface Props {
   postId: string;
@@ -23,6 +24,7 @@ const CommentSection: React.FC<Props> = ({
 
   const [quotedComment, setQuotedComment] =
     useState<Comment | null>(null);
+    const formRef = useRef<HTMLDivElement | null>(null);
 
   const {
     data,
@@ -48,17 +50,19 @@ const CommentSection: React.FC<Props> = ({
       </h2>
 
       {user && (
-        <CommentForm
-          postId={postId}
-          page={page}
-          quotedText={
-            quotedComment
-              ? `@${quotedComment.user.username}: ${quotedComment.content}`
-              : ''
-          }
-          quotedCommentId={quotedComment?._id}
-          clearQuote={() => setQuotedComment(null)}
-        />
+        <div ref={formRef}>
+            <CommentForm
+            postId={postId}
+            page={page}
+            quotedText={
+                quotedComment
+                ? `@${quotedComment.user.username}: ${quotedComment.content}`
+                : ''
+            }
+            quotedCommentId={quotedComment?._id}
+            clearQuote={() => setQuotedComment(null)}
+            />
+        </div>
       )}
 
       {!data?.comments?.length ? (
@@ -72,7 +76,16 @@ const CommentSection: React.FC<Props> = ({
             userId={user?._id}
             postId={postId}
             page={page}
-            onQuote={setQuotedComment}
+            onQuote={(comment) => {
+            setQuotedComment(comment);
+
+            setTimeout(() => {
+                formRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                });
+            }, 100);
+            }}
             />
           ))}
 

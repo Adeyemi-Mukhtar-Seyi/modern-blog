@@ -28,18 +28,27 @@ const CommentForm: React.FC<Props> = ({
     page
     );
 
-  const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!content.trim()) return;
 
-    mutate({
-    content,
-    quotedCommentId,
-    });
+    mutate(
+        {
+        content,
+        quotedComment: quotedCommentId,
+        },
+        {
+        onSuccess: () => {
+            setContent('');
 
-    setContent('');
-  };
+            if (clearQuote) {
+            clearQuote();
+            }
+        },
+        }
+    );
+    };
 
   return (
     <form
