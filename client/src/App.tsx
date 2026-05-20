@@ -2,7 +2,7 @@ import {
   Routes,
   Route,
 } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -27,7 +27,7 @@ type UserData = {
 };
 
 const App = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const [posts, setPosts] = useState<Post[]>([]);
 
