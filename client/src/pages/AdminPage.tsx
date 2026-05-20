@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Edit3, Trash2 } from "lucide-react";
 import type { Post } from '../types';
 import axiosInstance from "../api/axios";
+
 
 
 type UserData = {
@@ -17,6 +19,7 @@ type AdminPageProps = {
 };
 
 const AdminPage: React.FC<AdminPageProps> = ({ posts, setPosts }) => {
+  const navigate = useNavigate();
 
   const truncateText = (text: string, maxLength = 100) =>
     text.length <= maxLength ? text : text.substr(0, maxLength) + "...";
@@ -105,10 +108,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ posts, setPosts }) => {
               </button>
 
               <button
-                onClick={() => handleDeletePost(post._id)}
-                className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                onClick={() =>
+                  navigate(`/edit-post/${post._id}`)
+                }
+                className="p-2 text-orange-500 hover:bg-orange-50 rounded-lg"
               >
-                <Trash2 size={18} />
+                <Edit3 size={18} />
               </button>
             </div>
           </div>

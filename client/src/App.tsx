@@ -18,6 +18,7 @@ import axiosInstance from './api/axios';
 import { useAuth } from './context/AuthContext';
 import AdminRoute from './components/AdminRoute';
 import CreatePostPage from './pages/CreatePostPage';
+import EditPostPage from './pages/EditPostPage';
 
 type UserData = {
   username: string;
@@ -165,6 +166,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <CreatePostPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-post/:id"
+            element={
+              <ProtectedRoute>
+                <EditPostPage />
               </ProtectedRoute>
             }
           />
