@@ -153,16 +153,16 @@ const EditPostPage = () => {
 
     try {
 
-      await axiosInstance.put(
+        const response = await axiosInstance.put(
         `/posts/${id}`,
         formData
-      );
+        );
 
-      alert(
-        'Post updated successfully'
-      );
+        alert('Post updated successfully');
 
-      navigate('/admin');
+        navigate(
+        `/post/${response.data.post.slug}`
+        )
 
     } catch (err: any) {
 

@@ -14,12 +14,16 @@ import { useDebounce } from '../hooks/useDebounce';
 import { searchPosts } from '../services/postService';
 
 type HomePageProps = {
+  posts: Post[];
+  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
   currentPage: number;
   postsPerPage: number;
   onPageChange: (page: number) => void;
 };
 
 const HomePage = ({
+  posts,
+  setPosts,
   currentPage,
   postsPerPage,
   onPageChange,
@@ -175,8 +179,9 @@ const HomePage = ({
 
           data.posts.map((post: Post) => (
             <PostCard
-              key={post._id}
               post={post}
+              posts={posts}
+              setPosts={setPosts}
             />
           ))
 

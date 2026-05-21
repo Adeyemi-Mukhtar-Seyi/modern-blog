@@ -49,14 +49,18 @@ export const AuthProvider = ({
   }, []);
 
   const login = (token: string, user: User) => {
+    const normalizedUser = {
+      ...user,
+      id: user.id || (user as any)._id,
+    };
     localStorage.setItem('token', token);
 
     localStorage.setItem(
       'currentUser',
-      JSON.stringify(user)
+      JSON.stringify(normalizedUser)
     );
 
-    setUser(user);
+    setUser(normalizedUser);
     setToken(token);
   };
 

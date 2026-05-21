@@ -14,11 +14,15 @@ import type { Post } from '../types';
 import axiosInstance from "../api/axios";
 
 type PostCardProps = {
-  post: Post
+  post: Post;
+  posts: Post[];
+  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 };
 
 const PostCard = ({
-  post
+  post,
+  posts,
+  setPosts,
 }: PostCardProps) => {
 
   const navigate = useNavigate();
@@ -63,9 +67,12 @@ const PostCard = ({
           `/posts/${id}`
         );
 
-        alert('Post deleted');
+        setPosts((prevPosts) =>
+          prevPosts.filter((p) => p._id !== id)
+        );
 
-        window.location.reload();
+         alert('Post deleted');
+
 
       } catch (error: any) {
 

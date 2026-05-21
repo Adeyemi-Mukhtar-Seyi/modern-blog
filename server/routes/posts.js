@@ -27,8 +27,6 @@ router.get('/', async (req, res) => {
     .skip(skip)
     .limit(limit);
 
-    console.log(posts);
-
     const total = await Post.countDocuments({ status: 'published' });
 
 

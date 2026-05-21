@@ -103,7 +103,7 @@ exports.updatePost = async (req, res) => {
 
     // OWNER CHECK
     const isOwner =
-      post.author.toString() === req.user._id.toString();
+      post.author?._id?.toString() === req.user._id.toString();
 
     // ADMIN CHECK
     const isAdmin =
@@ -149,7 +149,7 @@ exports.deletePost = async (req, res) => {
 
     // OWNER CHECK
     const isOwner =
-      post.author.toString() === req.user._id.toString();
+      post.author?._id?.toString() === req.user._id.toString();
 
     // ADMIN CHECK
     const isAdmin =

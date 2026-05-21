@@ -108,11 +108,11 @@ const App = () => {
             path="/"
             element={
               <HomePage
+                posts={posts}
+                setPosts={setPosts}
                 currentPage={currentPostPage}
                 postsPerPage={postsPerPage}
-                onPageChange={
-                  setCurrentPostPage
-                }
+                onPageChange={setCurrentPostPage}
               />
             }
           />
