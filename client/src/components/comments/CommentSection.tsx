@@ -73,7 +73,7 @@ const CommentSection: React.FC<Props> = ({
             <CommentCard
             key={comment._id}
             comment={comment}
-            userId={user?._id}
+            userId={user?.id}
             postId={postId}
             page={page}
             onQuote={(comment) => {

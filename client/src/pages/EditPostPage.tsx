@@ -65,7 +65,7 @@ const EditPostPage = () => {
         // OWNER / ADMIN CHECK
 
         const isOwner =
-          post.author?._id === user?._id;
+          post.author?._id === user?.id;
 
         const isAdmin =
           user?.role === 'admin';

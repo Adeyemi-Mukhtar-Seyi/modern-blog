@@ -9,7 +9,7 @@ const Post = require('../models/Post');
 exports.getPosts = async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('author', 'username role')
+      .populate('author', 'username role _id')
       .sort({ createdAt: -1 });
 
     res.json(posts);
@@ -29,7 +29,7 @@ exports.getPosts = async (req, res) => {
 exports.getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author', 'username role');
+      .populate('author', 'username role _id');
 
     if (!post) {
       return res.status(404).json({
@@ -73,7 +73,7 @@ exports.createPost = async (req, res) => {
     });
 
     const populatedPost = await Post.findById(post._id)
-      .populate('author', 'username role');
+      .populate('author', 'username role _id');
 
     res.status(201).json(populatedPost);
   } catch (error) {
@@ -121,7 +121,7 @@ exports.updatePost = async (req, res) => {
       {
         new: true,
       }
-    ).populate('author', 'username role');
+    ).populate('author', 'username role _id');
 
     res.json(updatedPost);
   } catch (error) {
@@ -184,7 +184,7 @@ exports.getPostsByCategory = async (req, res) => {
     const posts = await Post.find({
       category: req.params.category,
     })
-      .populate('author', 'username role')
+      .populate('author', 'username role _id')
       .sort({ createdAt: -1 });
 
     res.json({
@@ -233,7 +233,7 @@ exports.searchPosts = async (req, res) => {
     }
 
     const posts = await Post.find(query)
-      .populate('author', 'username role')
+      .populate('author', 'username role _id')
       .sort(
         search
           ? { score: { $meta: 'textScore' } }

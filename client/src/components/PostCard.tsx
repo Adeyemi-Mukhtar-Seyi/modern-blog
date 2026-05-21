@@ -26,6 +26,9 @@ const PostCard = ({
   
   
   const { user } = useAuth();
+  console.log('LOGGED USER:', user);
+  console.log('POST AUTHOR:', post.author);
+  console.log('OWNER CHECK:', user?.id === post.author?._id);
   // LOCAL STATE
   const [likes, setLikes] = useState<string[]>(
     post.likes || []
@@ -36,7 +39,7 @@ const PostCard = ({
   );
   
   const isOwner =
-  user?._id === post.author?._id;
+  user?.id === post.author?._id;
 
   const isAdmin =
     user?.role === 'admin';
@@ -45,16 +48,35 @@ const PostCard = ({
     isOwner || isAdmin;
 
   const handleDelete = async (
-  id: string
-  ) => {
-    const confirmed = window.confirm(
-      'Delete this post?'
-    );
+      id: string
+    ) => {
 
-    if (!confirmed) return;
+      const confirmed = window.confirm(
+        'Delete this post?'
+      );
 
-    console.log('Delete post:', id);
-  };
+      if (!confirmed) return;
+
+      try {
+
+        await axiosInstance.delete(
+          `/posts/${id}`
+        );
+
+        alert('Post deleted');
+
+        window.location.reload();
+
+      } catch (error: any) {
+
+        console.log(error);
+
+        alert(
+          error.response?.data?.message ||
+          'Delete failed'
+        );
+      }
+    };
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString();
@@ -75,7 +97,7 @@ const PostCard = ({
 
   // CHECK IF USER LIKED
   const hasLiked = likes?.some(
-    (id: string) => id.toString() === user?._id
+    (id: string) => id.toString() === user?.id
   );
 
   // LIKE / UNLIKE
