@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
 
     const posts = await Post.find({ status: 'published' })
-    .populate('author', 'username role')
+   .populate('author', '_id username role')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -57,7 +57,7 @@ router.get('/admin/all', adminAuth, async (req, res) => {
     const skip = (page - 1) * limit;
 
     const posts = await Post.find()
-    .populate('author', 'username role')
+   .populate('author', '_id username role')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -96,7 +96,7 @@ router.get('/edit/:id', auth, async (req, res) => {
   try {
 
     const post = await Post.findById(req.params.id)
-      .populate('author', 'username role');
+     .populate('author', '_id username role')
 
     if (!post) {
       return res.status(404).json({
@@ -134,7 +134,7 @@ router.get('/:slug', async (req, res) => {
     const post = await Post.findOne({
       slug: req.params.slug,
       status: 'published',
-    }).populate('author', 'username role');;
+    }).populate('author', '_id username role');
     
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
@@ -285,8 +285,9 @@ router.put('/:id', auth, upload.single('media'), async (req, res) => {
 // Delete post (Admin only)
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
-    if (!post) {
+    const post = await Post.findById(req.params.id)
+    .populate('author', '_id username role')
+      if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
