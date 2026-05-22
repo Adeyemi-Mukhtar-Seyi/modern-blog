@@ -1,8 +1,12 @@
 import { useState } from 'react';
 
-import axiosInstance from '../api/axios';
+import { useCreatePost } from '../hooks/mutations/useCreatePost';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const CreatePostPage = () => {
+    const navigate = useNavigate();
+    const createPostMutation = useCreatePost();
 
   const [loading, setLoading] =
     useState(false);
@@ -58,29 +62,32 @@ const CreatePostPage = () => {
 
     try {
 
-      await axiosInstance.post(
-        '/posts',
+    await createPostMutation.mutateAsync(
         formData
-      );
+    );
 
-      alert('Post created successfully');
+      toast.success(
+        'Post created successfully'
+        );
 
-      setPostForm({
-        title: '',
-        content: '',
-        mediaType: 'image',
-        mediaUrl: '',
-        mediaFile: null,
-      });
+      navigate('/');
+
+    //   setPostForm({
+    //     title: '',
+    //     content: '',
+    //     mediaType: 'image',
+    //     mediaUrl: '',
+    //     mediaFile: null,
+    //   });
 
     } catch (err: any) {
 
       console.error(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         'Failed to create post'
-      );
+        );
 
     } finally {
 

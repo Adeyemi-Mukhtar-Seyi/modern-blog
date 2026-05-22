@@ -12,9 +12,24 @@ const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
 
+const {
+  globalLimiter,
+} = require(
+  './middleware/rateLimiter'
+);
+
+const {
+  connectRedis,
+} = require(
+  './config/redis'
+);
+
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
+
+app.use(globalLimiter);
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -47,6 +62,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
+
+connectRedis();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -11,16 +11,22 @@ import {
 import axiosInstance from '../api/axios';
 
 import { useAuth } from '../context/AuthContext';
+import { useUpdatePost } from '../hooks/mutations/useUpdatePost';
+import toast from 'react-hot-toast';
+import Skeleton from 'react-loading-skeleton';
+
 
 
 
 const EditPostPage = () => {
+    
+    const { id } = useParams();
 
-  const { id } = useParams();
+    const navigate = useNavigate();
+    const updatePostMutation = useUpdatePost();
 
-  const navigate = useNavigate();
 
-  const { user } = useAuth();
+    const { user } = useAuth();
 
 
 
@@ -74,9 +80,9 @@ const EditPostPage = () => {
 
         if (!isOwner && !isAdmin) {
 
-          alert(
-            'Unauthorized'
-          );
+         toast.error(
+            'Unauthorized access'
+            );
 
           navigate('/');
 
@@ -153,25 +159,25 @@ const EditPostPage = () => {
 
     try {
 
-        const response = await axiosInstance.put(
-        `/posts/${id}`,
-        formData
+       await updatePostMutation.mutateAsync({
+        id: id!,
+        formData,
+        });
+
+        toast.success(
+        'Post updated successfully'
         );
 
-        alert('Post updated successfully');
-
-        navigate(
-        `/post/${response.data.post.slug}`
-        )
+        navigate('/');
 
     } catch (err: any) {
 
       console.log(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         'Update failed'
-      );
+        );
 
     } finally {
 
@@ -181,14 +187,29 @@ const EditPostPage = () => {
 
 
 
-  if (loading) {
+    if (loading) {
 
     return (
-      <div className="p-6">
-        Loading...
-      </div>
+
+        <div className="max-w-3xl mx-auto px-4 py-8">
+
+        <Skeleton height={50} />
+
+        <div className="mt-8">
+            <Skeleton height={60} />
+        </div>
+
+        <div className="mt-4">
+            <Skeleton height={200} />
+        </div>
+
+        <div className="mt-4">
+            <Skeleton height={60} />
+        </div>
+
+        </div>
     );
-  }
+    }
 
 
 

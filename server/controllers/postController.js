@@ -1,5 +1,11 @@
 const Post = require('../models/Post');
 
+const {
+  redisClient,
+} = require(
+  '../config/redis'
+);
+
 
 
 // ======================================
@@ -7,19 +13,124 @@ const Post = require('../models/Post');
 // ======================================
 
 exports.getPosts = async (req, res) => {
-  try {
-    const posts = await Post.find()
-      .populate('author', 'username role _id')
-      .sort({ createdAt: -1 });
 
-    res.json(posts);
+  try {
+
+    const page =
+      Number(req.query.page) || 1;
+
+    const limit = 5;
+
+    const skip =
+      (page - 1) * limit;
+
+
+
+    const cacheKey =
+      `posts:page:${page}`;
+
+
+
+    // CHECK CACHE
+    let cachedPosts = null;
+
+    try {
+
+      cachedPosts =
+        await redisClient.get(
+          cacheKey
+        );
+
+    } catch (error) {
+
+      console.log(
+        'Redis read failed:',
+        error.message
+      );
+    }
+
+
+
+    // RETURN CACHE
+    if (cachedPosts) {
+
+      return res.status(200).json(
+        JSON.parse(cachedPosts)
+      );
+    }
+
+
+
+    // DATABASE QUERY
+    const posts = await Post.find()
+      .populate(
+        'author',
+        'username role _id'
+      )
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit);
+
+
+
+    // TOTAL POSTS
+    const totalPosts =
+      await Post.countDocuments();
+
+
+
+    const hasMore =
+      skip + posts.length <
+      totalPosts;
+
+
+
+    const responseData = {
+
+      posts,
+
+      nextPage:
+        hasMore
+          ? page + 1
+          : null,
+    };
+
+
+
+    // STORE CACHE
+    try {
+
+      await redisClient.setEx(
+        cacheKey,
+        60,
+        JSON.stringify(responseData)
+      );
+
+    } catch (error) {
+
+      console.log(
+        'Redis write failed:',
+        error.message
+      );
+    }
+
+
+
+    res.status(200).json(
+      responseData
+    );
+
   } catch (error) {
+
     res.status(500).json({
-      message: 'Failed to fetch posts',
+      message:
+        'Failed to fetch posts',
+      error: error.message,
     });
   }
 };
-
 
 
 // ======================================
@@ -75,6 +186,16 @@ exports.createPost = async (req, res) => {
     const populatedPost = await Post.findById(post._id)
       .populate('author', 'username role _id');
 
+      const keys =
+        await redisClient.keys(
+          'posts:page:*'
+        );
+
+      if (keys.length > 0) {
+
+        await redisClient.del(keys);
+      }
+
     res.status(201).json(populatedPost);
   } catch (error) {
     console.log(error);
@@ -122,6 +243,15 @@ exports.updatePost = async (req, res) => {
         new: true,
       }
     ).populate('author', 'username role _id');
+     const keys =
+        await redisClient.keys(
+          'posts:page:*'
+        );
+
+      if (keys.length > 0) {
+
+        await redisClient.del(keys);
+    }
 
     res.json(updatedPost);
   } catch (error) {
@@ -162,6 +292,15 @@ exports.deletePost = async (req, res) => {
     }
 
     await post.deleteOne();
+    const keys =
+      await redisClient.keys(
+        'posts:page:*'
+      );
+
+    if (keys.length > 0) {
+
+      await redisClient.del(keys);
+    }
 
     res.json({
       message: 'Post deleted successfully',

@@ -13,6 +13,11 @@ const {
   searchPosts,
 } = require('../controllers/postController');
 
+const {
+  likeLimiter,
+  writeLimiter,
+} = require('../middleware/rateLimiter');
+
 
 // Get all posts (with pagination)
 router.get('/', async (req, res) => {
@@ -154,8 +159,13 @@ router.get('/:slug', async (req, res) => {
 }
 });
 
-// Create new post (Admin only)
-router.post('/', auth, upload.single('media'), async (req, res) => {
+// Create new post 
+router.post(
+  '/',
+  writeLimiter,
+  auth,
+  upload.single('media'),
+  async (req, res) => {
   try {
     const { title,
     content,
@@ -211,8 +221,13 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
 });
 
 
-// Update post (Admin only)
-router.put('/:id', auth, upload.single('media'), async (req, res) => {
+// Update post 
+router.put(
+  '/:id',
+  writeLimiter,
+  auth,
+  upload.single('media'),
+  async (req, res) => {
   try {
     const { title, content, mediaType, tags, status } = req.body;
     
@@ -280,8 +295,12 @@ router.put('/:id', auth, upload.single('media'), async (req, res) => {
   }
 });
 
-// Delete post (Admin only)
-router.delete('/:id', auth, async (req, res) => {
+// Delete post 
+router.delete(
+  '/:id',
+  writeLimiter,
+  auth,
+  async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
     .populate('author', 'username role _id')

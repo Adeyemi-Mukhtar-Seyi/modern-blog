@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Eye,
   Calendar,
@@ -6,144 +6,164 @@ import {
   UserCircle,
   Heart,
 } from 'lucide-react';
+
 import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../context/AuthContext';
 
 import type { Post } from '../types';
 
-import axiosInstance from "../api/axios";
+import axiosInstance from '../api/axios';
+import { useDeletePost } from '../hooks/mutations/useDeletePost';
+import { useLikePost } from '../hooks/mutations/useLikePost';
+import toast from 'react-hot-toast';
 
 type PostCardProps = {
   post: Post;
-  posts: Post[];
-  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 };
 
 const PostCard = ({
   post,
-  posts,
-  setPosts,
 }: PostCardProps) => {
 
   const navigate = useNavigate();
-  
-  
-  
+  const deletePostMutation =
+  useDeletePost();
+
+  const likePostMutation =
+    useLikePost();
+
   const { user } = useAuth();
-  console.log('LOGGED USER:', user);
-  console.log('POST AUTHOR:', post.author);
-  console.log('OWNER CHECK:', user?.id === post.author?._id);
-  // LOCAL STATE
-  const [likes, setLikes] = useState<string[]>(
-    post.likes || []
-  );
 
-  const [likesCount, setLikesCount] = useState<number>(
-    post.likesCount || 0
-  );
-  
+
+  // OWNER CHECK
   const isOwner =
-  user?.id === post.author?._id;
+    user?.id === post.author?._id;
 
+  // ADMIN CHECK
   const isAdmin =
     user?.role === 'admin';
 
+  // CAN MODIFY
   const canModify =
     isOwner || isAdmin;
 
+  // DELETE POST
   const handleDelete = async (
-      id: string
-    ) => {
+    id: string
+  ) => {
 
-      const confirmed = window.confirm(
-        'Delete this post?'
+    const confirmed = window.confirm(
+      'Delete this post?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+      await axiosInstance.delete(
+        `/posts/${id}`
       );
 
-      if (!confirmed) return;
+      // REMOVE FROM UI IMMEDIATELY
+      
 
-      try {
+      await deletePostMutation.mutateAsync(
+        id
+      );
 
-        await axiosInstance.delete(
-          `/posts/${id}`
+        toast.success(
+          'Post deleted successfully'
         );
 
-        setPosts((prevPosts) =>
-          prevPosts.filter((p) => p._id !== id)
-        );
+    } catch (error: any) {
 
-         alert('Post deleted');
+      console.log(error);
 
+      toast.error(
+        error.response?.data?.message ||
+        'Delete failed'
+      );
+    }
+  };
 
-      } catch (error: any) {
-
-        console.log(error);
-
-        alert(
-          error.response?.data?.message ||
-          'Delete failed'
-        );
-      }
-    };
-
-  const formatDate = (dateString: string) =>
+  // FORMAT DATE
+  const formatDate = (
+    dateString: string
+  ) =>
     new Date(dateString).toLocaleDateString();
 
-  const formatTime = (dateString: string) =>
-    new Date(dateString).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  // FORMAT TIME
+  const formatTime = (
+    dateString: string
+  ) =>
+    new Date(dateString).toLocaleTimeString(
+      [],
+      {
+        hour: '2-digit',
+        minute: '2-digit',
+      }
+    );
 
+  // TRUNCATE TEXT
   const truncateText = (
     text: string,
     maxLength: number = 150
   ) =>
     text.length <= maxLength
       ? text
-      : text.substr(0, maxLength) + '...';
+      : text.substring(0, maxLength) + '...';
 
   // CHECK IF USER LIKED
-  const hasLiked = likes?.some(
-    (id: string) => id.toString() === user?.id
+  const hasLiked = post.likes?.some(
+    (id: string) =>
+      id.toString() === user?.id
   );
 
   // LIKE / UNLIKE
-  const handleLike = async (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault();
+      const handleLike = async (
+      e: React.MouseEvent<HTMLButtonElement>
+    ) => {
 
-    try {
+      e.preventDefault();
 
-      const res = await axiosInstance.put(
-        `/posts/${post._id}/like`
-      );
+      if (!user) return;
 
-       const data = res.data;
+      try {
 
-      // UPDATE STATE
-      setLikes(data.post.likes);
-      setLikesCount(data.post.likesCount);
+        await likePostMutation.mutateAsync(
+          post._id
+        );
 
-    } catch (error) {
-      console.error('Like error:', error);
-    }
-  };
+      } catch (error) {
 
-  const sharePost = async () => {
-  const url = `${window.location.origin}/post/${post._id}`;
-
-      await navigator.clipboard.writeText(url);
-
-      alert('Post link copied!');
+        console.error(
+          'Like error:',
+          error
+        );
+      }
     };
 
-  
+  // SHARE POST
+  const sharePost = async () => {
+
+    const url =
+      `${window.location.origin}/post/${post.slug}`;
+
+    await navigator.clipboard.writeText(
+      url
+    );
+
+      toast.success(
+        'Post link copied!'
+      );
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
 
       <div className="p-6">
+
         <h3 className="text-xl font-semibold text-black mb-3">
           {post.title}
         </h3>
@@ -153,10 +173,12 @@ const PostCard = ({
         </p>
 
         <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+
           <div className="flex items-center space-x-4">
 
             <div className="flex items-center space-x-1">
               <UserCircle size={16} />
+
               <span>
                 {post.author?.username || 'Unknown'}
               </span>
@@ -164,12 +186,18 @@ const PostCard = ({
 
             <div className="flex items-center space-x-1">
               <Calendar size={16} />
-              <span>{formatDate(post.createdAt)}</span>
+
+              <span>
+                {formatDate(post.createdAt)}
+              </span>
             </div>
 
             <div className="flex items-center space-x-1">
               <Clock size={16} />
-              <span>{formatTime(post.createdAt)}</span>
+
+              <span>
+                {formatTime(post.createdAt)}
+              </span>
             </div>
 
           </div>
@@ -177,17 +205,22 @@ const PostCard = ({
 
         <div className="flex items-center justify-between">
 
+          {/* READ MORE */}
           <button
             type="button"
             onClick={() =>
-                navigate(`/post/${post.slug}`)
-              }
+              navigate(`/post/${post.slug}`)
+            }
             className="flex items-center space-x-1 text-orange-500 hover:text-orange-600 font-medium"
           >
             <Eye size={16} />
-            <span>Read More</span>
+
+            <span>
+              Read More
+            </span>
           </button>
 
+          {/* LIKE */}
           <button
             type="button"
             onClick={handleLike}
@@ -202,37 +235,49 @@ const PostCard = ({
               }
             />
 
-            <span>{likesCount}</span>
+            <span>
+              {post.likesCount}
+            </span>
           </button>
 
-          <button onClick={sharePost}>
+          {/* SHARE */}
+          <button
+            onClick={sharePost}
+          >
             Share
           </button>
 
         </div>
-      </div>
-      {canModify && (
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={() =>
-              navigate(`/edit-post/${post._id}`)
-            }
-            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-          >
-            Edit
-          </button>
 
-          <button
-            onClick={() => handleDelete(post._id)}
-            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-          >
-            Delete
-          </button>
-        </div>
-      )}
+        {/* EDIT / DELETE */}
+        {canModify && (
+
+          <div className="flex gap-2 mt-4">
+
+            <button
+              onClick={() =>
+                navigate(`/edit-post/${post._id}`)
+              }
+              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+            >
+              Edit
+            </button>
+
+            <button
+              onClick={() =>
+                handleDelete(post._id)
+              }
+              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+
+          </div>
+        )}
+
+      </div>
     </div>
   );
 };
 
 export default PostCard;
-

@@ -53,21 +53,29 @@ export const AuthProvider = ({
       ...user,
       id: user.id || (user as any)._id,
     };
+
     localStorage.setItem('token', token);
 
-    localStorage.setItem(
-      'currentUser',
-      JSON.stringify(normalizedUser)
-    );
+  localStorage.setItem(
+    'userId',
+    normalizedUser.id
+  );
+
+  localStorage.setItem(
+    'currentUser',
+    JSON.stringify(normalizedUser)
+  );
 
     setUser(normalizedUser);
     setToken(token);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+  localStorage.removeItem('token');
 
-    localStorage.removeItem('currentUser');
+  localStorage.removeItem('userId');
+
+  localStorage.removeItem('currentUser');
 
     setUser(null);
 

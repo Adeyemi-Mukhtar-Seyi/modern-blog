@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 type MediaRendererProps = {
   mediaType?: string;
@@ -6,79 +6,131 @@ type MediaRendererProps = {
   title: string;
 };
 
-const MediaRenderer = ({ mediaType, mediaUrl, title }: MediaRendererProps) => {
-  if (!mediaUrl || !mediaType) return null; // ✅ safeguard if media is missing
 
+
+const MediaRenderer = ({
+  mediaType,
+  mediaUrl,
+  title,
+}: MediaRendererProps) => {
+
+  const [imageLoading, setImageLoading] =
+    useState(true);
+
+  const [imageError, setImageError] =
+    useState(false);
+
+
+
+  if (!mediaUrl || !mediaType) {
+    return null;
+  }
+
+
+
+  // IMAGE
   if (mediaType === 'image') {
-    return (
-      <img
-        src={mediaUrl}
-        alt={title}
-        className="w-full h-64 object-cover rounded-t-lg"
-      />
-    );
-  }
 
-  if (mediaType === 'video') {
     return (
-      <video
-        src={mediaUrl}
-        controls
-        className="w-full h-64 rounded-t-lg"
-      >
-        Your browser does not support the video tag.
-      </video>
-    );
-  }
 
-  if (mediaType === 'audio') {
-    return (
-      <div className="w-full bg-gray-100 rounded-t-lg flex items-center justify-center p-4">
-        <audio controls className="w-full max-w-md">
-          <source src={mediaUrl} type="audio/mpeg" />
-          Your browser does not support the audio element.
-        </audio>
+      <div className="relative w-full overflow-hidden rounded-t-lg bg-gray-100 aspect-video">
+
+        {/* SKELETON */}
+        {imageLoading && !imageError && (
+
+          <div className="absolute inset-0 animate-pulse bg-gray-300" />
+
+        )}
+
+        {/* IMAGE ERROR */}
+        {imageError ? (
+
+          <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+
+            Failed to load image
+
+          </div>
+
+        ) : (
+
+          <img
+            src={mediaUrl}
+            alt={title}
+            loading="lazy"
+            decoding="async"
+            onLoad={() =>
+              setImageLoading(false)
+            }
+            onError={() => {
+              setImageLoading(false);
+              setImageError(true);
+            }}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
+              imageLoading
+                ? 'opacity-0'
+                : 'opacity-100'
+            }`}
+          />
+
+        )}
+
       </div>
     );
   }
+
+
+
+  // VIDEO
+  if (mediaType === 'video') {
+
+    return (
+
+      <div className="w-full overflow-hidden rounded-t-lg bg-black aspect-video">
+
+        <video
+          src={mediaUrl}
+          controls
+          preload="metadata"
+          className="w-full h-full"
+        >
+          Your browser does not support the video tag.
+        </video>
+
+      </div>
+    );
+  }
+
+
+
+  // AUDIO
+  if (mediaType === 'audio') {
+
+    return (
+
+      <div className="w-full bg-gray-100 rounded-t-lg flex items-center justify-center p-4">
+
+        <audio
+          controls
+          preload="none"
+          className="w-full max-w-md"
+        >
+
+          <source
+            src={mediaUrl}
+            type="audio/mpeg"
+          />
+
+          Your browser does not support the audio element.
+
+        </audio>
+
+      </div>
+    );
+  }
+
+
 
   return null;
 };
 
 export default MediaRenderer;
-
-
-
-
-
-
-
-
-
-
-
-// import React from 'react';
-
-// const MediaRenderer = ({ mediaType, mediaUrl, title }) => {
-//   if (mediaType === 'image') {
-//     return <img src={mediaUrl} alt={title} className="w-full h-48 object-cover rounded-t-lg" />;
-//   } else if (mediaType === 'video') {
-//     return (
-//       <video src={mediaUrl} controls className="w-full h-48 object-cover rounded-t-lg">
-//         Your browser does not support the video tag.
-//       </video>
-//     );
-//   } else if (mediaType === 'audio') {
-//     return (
-//       <div className="w-full h-48 bg-black rounded-t-lg flex items-center justify-center">
-//         <audio controls className="w-full max-w-md">
-//           <source src={mediaUrl} type="audio/mpeg" />
-//           Your browser does not support the audio element.
-//         </audio>
-//       </div>
-//     );
-//   }
-//   return null;
-// };
-
-// export default MediaRenderer;

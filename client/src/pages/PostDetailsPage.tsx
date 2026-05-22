@@ -5,6 +5,8 @@ import type { Post } from '../types';
 import axiosInstance from "../api/axios";
 import CommentSection from '../components/comments/CommentSection';
 import { useAuth } from '../context/AuthContext';
+import PostDetailsSkeleton
+from '../components/skeletons/PostDetailsSkeleton';
 
 const PostDetailsPage = () => {
   const { slug } = useParams();
@@ -35,11 +37,7 @@ const PostDetailsPage = () => {
   }, [slug]);
 
   if (!post) {
-    return (
-      <div className="text-center mt-20">
-        Loading...
-      </div>
-    );
+    return <PostDetailsSkeleton />;
   }
 
   return (
