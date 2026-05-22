@@ -6,7 +6,7 @@ import {
   getPosts,
 } from '../api/posts';
 
-import {queryKeys,} from './constants/queryKeys';
+import { queryKeys } from '../constants/queryKeys';
 
 
 
