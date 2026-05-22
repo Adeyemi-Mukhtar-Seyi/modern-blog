@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
 } from 'react';
 
 type User = {
@@ -24,6 +25,11 @@ const AuthContext = createContext<AuthContextType | null>(
   null
 );
 
+const INACTIVITY_TIMEOUT =
+  1000 * 60 * 30;
+
+// 30 minutes
+
 export const AuthProvider = ({
   children,
 }: {
@@ -34,6 +40,27 @@ export const AuthProvider = ({
   const [token, setToken] = useState<string | null>(
     null
   );
+
+ const logoutTimer =
+    useRef<ReturnType<typeof setTimeout> | null>(
+      null
+  );
+
+    const resetLogoutTimer = () => {
+
+    if (logoutTimer.current) {
+      clearTimeout(
+        logoutTimer.current
+      );
+    }
+
+    logoutTimer.current =
+      setTimeout(() => {
+
+        logout();
+
+      }, INACTIVITY_TIMEOUT);
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem(
@@ -47,6 +74,48 @@ export const AuthProvider = ({
       setToken(storedToken);
     }
   }, []);
+
+    useEffect(() => {
+
+    if (!user) return;
+
+    const events = [
+      'mousemove',
+      'keydown',
+      'click',
+      'scroll',
+    ];
+
+    const handleActivity = () => {
+      resetLogoutTimer();
+    };
+
+    events.forEach((event) => {
+      window.addEventListener(
+        event,
+        handleActivity
+      );
+    });
+
+    resetLogoutTimer();
+
+    return () => {
+
+      events.forEach((event) => {
+        window.removeEventListener(
+          event,
+          handleActivity
+        );
+      });
+
+      if (logoutTimer.current) {
+        clearTimeout(
+          logoutTimer.current
+        );
+      }
+    };
+
+  }, [user]);
 
   const login = (token: string, user: User) => {
     const normalizedUser = {
@@ -68,6 +137,7 @@ export const AuthProvider = ({
 
     setUser(normalizedUser);
     setToken(token);
+    resetLogoutTimer();
   };
 
   const logout = () => {
@@ -77,9 +147,15 @@ export const AuthProvider = ({
 
   localStorage.removeItem('currentUser');
 
-    setUser(null);
+  if (logoutTimer.current) {
+    clearTimeout(
+      logoutTimer.current
+    );
+  }
 
-    setToken(null);
+  setUser(null);
+
+  setToken(null);
     };
   return (
     <AuthContext.Provider

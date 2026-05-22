@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import type { Comment } from '../../types/comment';
+import { useAuth } from '../../context/AuthContext';
 
 import {
   useLikeComment,
@@ -30,8 +31,14 @@ const CommentCard: React.FC<Props> = ({
     const { mutate: likeMutate } =
     useLikeComment(postId, page, userId);
 
+    const { user } = useAuth();
+
     const { mutate: dislikeMutate } =
-    useDislikeComment(postId, page);
+      useDislikeComment(
+        postId,
+        page,
+        user?.id
+      );
   const liked = comment.likes.includes(userId || '');
 
   const disliked = comment.dislikes.includes(userId || '');

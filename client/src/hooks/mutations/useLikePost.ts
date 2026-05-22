@@ -7,10 +7,6 @@ import { likePost } from '../../api/posts';
 
 import { queryKeys } from '../../lib/queryKeys';
 
-import type { Post } from '../../types';
-
-
-
 export const useLikePost = () => {
 
   const queryClient =
@@ -20,95 +16,158 @@ export const useLikePost = () => {
 
     mutationFn: likePost,
 
-
-
     // OPTIMISTIC UPDATE
-    onMutate: async (postId) => {
+    onMutate: async (postId: string) => {
 
-      // CANCEL ACTIVE REQUESTS
       await queryClient.cancelQueries({
         queryKey: queryKeys.posts,
       });
 
-      // SNAPSHOT PREVIOUS CACHE
+      // SNAPSHOT
       const previousPosts =
-        queryClient.getQueryData<Post[]>(
-          queryKeys.posts
+        queryClient.getQueriesData({
+          queryKey: queryKeys.posts,
+        });
+
+      const userId =
+        localStorage.getItem(
+          'userId'
         );
 
+      // UPDATE ALL POSTS QUERIES
+      queryClient.setQueriesData(
+        {
+          queryKey: queryKeys.posts,
+        },
+        (oldData: any) => {
 
+          if (!oldData) return oldData;
 
-      // UPDATE CACHE IMMEDIATELY
-      queryClient.setQueryData<Post[]>(
-        queryKeys.posts,
-        (oldPosts) => {
-
-          if (!oldPosts) return [];
-
-          return oldPosts.map((post) => {
-
-            if (post._id !== postId) {
-              return post;
-            }
-
-            const userId =
-              localStorage.getItem(
-                'userId'
-              );
-
-            const hasLiked =
-              post.likes?.includes(
-                userId || ''
-              );
+          // NORMAL QUERY
+          if (oldData.posts) {
 
             return {
+              ...oldData,
 
-              ...post,
+              posts: oldData.posts.map(
+                (post: any) => {
 
-              likes: hasLiked
-                ? post.likes.filter(
-                    (id) => id !== userId
-                  )
-                : [
-                    ...post.likes,
-                    userId || '',
-                  ],
+                  if (
+                    post._id !== postId
+                  ) {
+                    return post;
+                  }
 
-              likesCount: hasLiked
-                ? post.likesCount - 1
-                : post.likesCount + 1,
+                  const hasLiked =
+                    post.likes.includes(
+                      userId
+                    );
+
+                  return {
+                    ...post,
+
+                    likes: hasLiked
+                      ? post.likes.filter(
+                          (id: string) =>
+                            id !== userId
+                        )
+                      : [
+                          ...post.likes,
+                          userId,
+                        ],
+
+                    likesCount: hasLiked
+                      ? post.likesCount - 1
+                      : post.likesCount + 1,
+                  };
+                }
+              ),
             };
-          });
+          }
+
+          // INFINITE QUERY
+          if (oldData.pages) {
+
+            return {
+              ...oldData,
+
+              pages: oldData.pages.map(
+                (page: any) => ({
+
+                  ...page,
+
+                  posts: page.posts.map(
+                    (post: any) => {
+
+                      if (
+                        post._id !== postId
+                      ) {
+                        return post;
+                      }
+
+                      const hasLiked =
+                        post.likes.includes(
+                          userId
+                        );
+
+                      return {
+                        ...post,
+
+                        likes: hasLiked
+                          ? post.likes.filter(
+                              (
+                                id: string
+                              ) =>
+                                id !==
+                                userId
+                            )
+                          : [
+                              ...post.likes,
+                              userId,
+                            ],
+
+                        likesCount:
+                          hasLiked
+                            ? post.likesCount -
+                              1
+                            : post.likesCount +
+                              1,
+                      };
+                    }
+                  ),
+                })
+              ),
+            };
+          }
+
+          return oldData;
         }
       );
 
-
-
-      // RETURN ROLLBACK DATA
-      return { previousPosts };
+      return {
+        previousPosts,
+      };
     },
 
-
-
-    // ROLLBACK IF FAILED
+    // ROLLBACK
     onError: (
       _error,
       _postId,
       context
     ) => {
 
-      if (context?.previousPosts) {
+      context?.previousPosts?.forEach(
+        ([queryKey, data]) => {
 
-        queryClient.setQueryData(
-          queryKeys.posts,
-          context.previousPosts
-        );
-      }
+          queryClient.setQueryData(
+            queryKey,
+            data
+          );
+        }
+      );
     },
 
-
-
-    // ALWAYS SYNC SERVER
+    // REFETCH
     onSettled: async () => {
 
       await queryClient.invalidateQueries({

@@ -119,21 +119,124 @@ export const useLikeComment = (
 
 export const useDislikeComment = (
   postId: string,
-  page: number
+  page: number,
+  userId?: string
 ) => {
-  const queryClient = useQueryClient();
+
+  const queryClient =
+    useQueryClient();
 
   return useMutation({
+
     mutationFn: dislikeComment,
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['comments', postId, page],
+    // OPTIMISTIC UPDATE
+    onMutate: async (
+      commentId: string
+    ) => {
+
+      await queryClient.cancelQueries({
+        queryKey: [
+          'comments',
+          postId,
+          page,
+        ],
       });
+
+      const previousData =
+        queryClient.getQueryData([
+          'comments',
+          postId,
+          page,
+        ]);
+
+      queryClient.setQueryData(
+        [
+          'comments',
+          postId,
+          page,
+        ],
+
+        (oldData: any) => {
+
+          if (!oldData) {
+            return oldData;
+          }
+
+          return {
+
+            ...oldData,
+
+            comments:
+              oldData.comments.map(
+                (comment: any) => {
+
+                  if (
+                    comment._id !==
+                    commentId
+                  ) {
+                    return comment;
+                  }
+
+                  return {
+
+                    ...comment,
+
+                  dislikes: comment.dislikes.includes(
+                    userId
+                  )
+                    ? comment.dislikes.filter(
+                        (id: string) =>
+                          id !== userId
+                      )
+                    : [
+                        ...comment.dislikes,
+                        userId || '',
+                      ],
+                  };
+                }
+              ),
+          };
+        }
+      );
+
+      return {
+        previousData,
+      };
     },
 
-    onError: () => {
-      toast.error('Failed to dislike comment');
+    // ROLLBACK
+    onError: (
+      _error,
+      _variables,
+      context
+    ) => {
+
+      queryClient.setQueryData(
+        [
+          'comments',
+          postId,
+          page,
+        ],
+
+        context?.previousData
+      );
+
+      toast.error(
+        'Failed to dislike comment'
+      );
+    },
+
+    // REFRESH
+    onSettled: () => {
+
+      queryClient.invalidateQueries({
+        queryKey: [
+          'comments',
+          postId,
+          page,
+        ],
+      });
     },
   });
 };

@@ -61,10 +61,6 @@ const PostCard = ({
 
     try {
 
-      await axiosInstance.delete(
-        `/posts/${id}`
-      );
-
       // REMOVE FROM UI IMMEDIATELY
       
 

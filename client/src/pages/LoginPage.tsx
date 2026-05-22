@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff, } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from "../api/axios";
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +17,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword,] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,14 +65,51 @@ const LoginPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-2">Password</label>
-            <input
-              type="password"
-              value={credentials.password}
-              onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
+            <label className="block text-sm font-medium text-black mb-2">
+              Password
+            </label>
+
+            <div className="relative">
+
+              <input
+                type={
+                  showPassword
+                    ? 'text'
+                    : 'password'
+                }
+                value={credentials.password}
+                onChange={(e) =>
+                  setCredentials({
+                    ...credentials,
+                    password:
+                      e.target.value,
+                  })
+                }
+                className="w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
+                required
+              />
+
+              <button
+                type="button"
+
+                onClick={() =>
+                  setShowPassword(
+                    !showPassword
+                  )
+                }
+
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+
+              </button>
+
+            </div>
           </div>
 
           <button
