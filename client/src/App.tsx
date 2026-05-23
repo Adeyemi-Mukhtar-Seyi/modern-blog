@@ -1,7 +1,4 @@
-import {
-  Routes,
-  Route,
-} from 'react-router-dom';
+import { Routes, Route, } from 'react-router-dom';
 
 import { useState } from 'react';
 
@@ -21,8 +18,11 @@ import EditPostPage from './pages/EditPostPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import FeedPage from './pages/FeedPage';
+import { useRealtimePosts, } from './hooks/useRealtimePosts';
 
 const App = () => {
+
+  // useRealtimePosts();
 
   const [currentPostPage, setCurrentPostPage] =
     useState<number>(1);

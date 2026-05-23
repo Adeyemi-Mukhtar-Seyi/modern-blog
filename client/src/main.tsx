@@ -10,19 +10,29 @@ import {
   QueryErrorResetBoundary,
 } from '@tanstack/react-query';
 
-
 import App from './App';
 import './index.css';
 
 import { queryClient } from './lib/queryClient';
 
 import { AuthProvider } from './context/AuthContext';
+import { socket } from './lib/socket';
+import PostSocketListener from './components/socket/PostSocketListener';
+
+{socket.on('connect', () => {
+  console.log(
+    'Socket connected:',
+    socket.id
+  );
+})}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <PostSocketListener />
            <QueryErrorResetBoundary>
 
               {({ reset }) => (

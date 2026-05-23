@@ -6,7 +6,9 @@ import {
   getPosts,
 } from '../api/posts';
 
-import { queryKeys } from '../constants/queryKeys';
+import {
+  queryKeys,
+} from '../constants/queryKeys';
 
 
 
@@ -18,14 +20,26 @@ export const useInfinitePosts =
       queryKey:
         queryKeys.posts.all,
 
-      queryFn:
-        ({ pageParam }) =>
-          getPosts(pageParam),
-
       initialPageParam: 1,
 
+      queryFn: async ({
+        pageParam = 1,
+      }) => {
+
+        console.log(
+          'Fetching page:',
+          pageParam
+        );
+
+        return getPosts(
+          Number(pageParam)
+        );
+      },
+
       getNextPageParam:
-        (lastPage) =>
-          lastPage.nextPage,
+        (lastPage) => {
+
+          return lastPage.nextPage;
+        },
     });
   };

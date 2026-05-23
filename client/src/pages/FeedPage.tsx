@@ -1,23 +1,21 @@
-import {
-  useEffect,
-  useRef,
-} from 'react';
-
+import { useEffect, useRef, } from 'react';
 import PostCard from '../components/PostCard';
-
 import PostCardSkeleton from '../components/skeletons/PostCardSkeleton';
-
-import {
-  useInfinitePosts,
-} from '../hooks/useInfinitePosts';
-
-import type {
-  Post,
-} from '../types';
+import { useInfinitePosts, } from '../hooks/useInfinitePosts';
+import type { Post, } from '../types';
+import { socket } from '../lib/socket';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../constants/queryKeys';
+import { useInView } from 'react-intersection-observer';
 
 
 
 const FeedPage = () => {
+  console.log('FeedPage mounted');
+  const queryClient = useQueryClient();
+  const { ref, inView } = useInView({
+  threshold: 0,
+  });
 
   const {
     data,
@@ -36,45 +34,137 @@ const FeedPage = () => {
     );
 
 
-
   useEffect(() => {
 
-    const observer =
-      new IntersectionObserver(
-        (entries) => {
+    socket.on(
+      'new-post',
+      (newPost) => {
 
-          if (
-            entries[0].isIntersecting &&
-            hasNextPage
-          ) {
+        queryClient.setQueryData(
+          queryKeys.posts.all,
 
-            fetchNextPage();
+          (oldData: any) => {
+
+            if (!oldData) return oldData;
+
+            return {
+
+              ...oldData,
+
+              pages: oldData.pages.map(
+                (
+                  page: any,
+                  index: number
+                ) => {
+
+                  // ONLY FIRST PAGE
+                  if (index === 0) {
+
+                    // PREVENT DUPLICATES
+                    const exists =
+                      page.posts.some(
+                        (post: any) =>
+                          post._id ===
+                          newPost._id
+                      );
+
+                    if (exists) {
+                      return page;
+                    }
+
+                    return {
+
+                      ...page,
+
+                      posts: [
+                        newPost,
+                        ...page.posts,
+                      ],
+                    };
+                  }
+
+                  return page;
+                }
+              ),
+            };
           }
-        },
-        {
-          threshold: 1,
-        }
-      );
-
-
-
-    if (observerRef.current) {
-
-      observer.observe(
-        observerRef.current
-      );
-    }
-
-
+        );
+      }
+    );
 
     return () => {
 
-      observer.disconnect();
+      socket.off('new-post');
     };
+
+  }, [queryClient]);
+
+  useEffect(() => {
+
+  if (
+    inView &&
+    hasNextPage &&
+    !isFetchingNextPage
+  ) {
+
+    console.log(
+      'Fetching next page...'
+    );
+
+    fetchNextPage();
+  }
+
+  }, [
+    inView,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ]);
+
+  useEffect(() => {
+
+  const observer =
+    new IntersectionObserver(
+      (entries) => {
+
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+
+          console.log(
+            'Fetching next page...'
+          );
+
+          fetchNextPage();
+        }
+      },
+      {
+        rootMargin: '200px',
+      }
+    );
+
+  const currentRef =
+    observerRef.current;
+
+  if (currentRef) {
+
+    observer.observe(currentRef);
+  }
+
+  return () => {
+
+    if (currentRef) {
+
+      observer.unobserve(currentRef);
+    }
+  };
 
   }, [
     fetchNextPage,
     hasNextPage,
+    isFetchingNextPage,
   ]);
 
 
@@ -174,10 +264,12 @@ const FeedPage = () => {
 
 
       {/* OBSERVER */}
-      <div
-        ref={observerRef}
-        className="h-10"
-      />
+        <div
+        ref={ref}
+        className="h-40 flex items-center justify-center"
+      >
+        Loading more...
+      </div>
 
 
 

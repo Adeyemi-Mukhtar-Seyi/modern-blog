@@ -11,6 +11,8 @@ const commentRoutes = require('./routes/commentRoutes');
 const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const {
   globalLimiter,
@@ -27,7 +29,15 @@ const {
 dotenv.config();
 
 const app = express();
-app.set('trust proxy', 1);
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    credentials: true,
+  },
+});
 
 app.use(globalLimiter);
 const PORT = process.env.PORT || 5000;
@@ -63,8 +73,30 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
+app.set('io', io);
+
 connectRedis();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+global.io = io;
+
+io.on('connection', (socket) => {
+
+  console.log(
+    'User connected:',
+    socket.id
+  );
+
+  socket.on('disconnect', () => {
+
+    console.log(
+      'User disconnected:',
+      socket.id
+    );
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(
+    `Server running on port ${PORT}`
+  );
 });

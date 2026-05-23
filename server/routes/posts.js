@@ -22,34 +22,64 @@ const {
 // Get all posts (with pagination)
 router.get('/', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
-    const skip = (page - 1) * limit;
 
-    const posts = await Post.find({ status: 'published' })
-   .populate('author', 'username role _id')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+    const page =
+      parseInt(req.query.page) || 1;
 
-    const total = await Post.countDocuments({ status: 'published' });
+    const limit =
+      parseInt(req.query.limit) || 5;
 
+    const skip =
+      (page - 1) * limit;
+
+    const posts =
+      await Post.find({
+        status: 'published'
+      })
+      .populate(
+        'author',
+        'username role _id'
+      )
+      .sort({
+        createdAt: -1
+      })
+      .skip(skip)
+      .limit(limit);
+
+    const total =
+      await Post.countDocuments({
+        status: 'published'
+      });
+
+    const totalPages =
+      Math.ceil(total / limit);
 
     res.json({
       posts,
       currentPage: page,
-      totalPages: Math.ceil(total / limit),
-      totalPosts: total
-    });
-  } catch (error) {
-  console.log("CREATE POST ERROR:");
-  console.log(error);
+      totalPages,
+      totalPosts: total,
 
-  res.status(500).json({
-    message: 'Error creating post',
-    error: error.message
-  });
-}
+      nextPage:
+        page < totalPages
+          ? page + 1
+          : null,
+    });
+
+  } catch (error) {
+
+    console.log(
+      "CREATE POST ERROR:"
+    );
+
+    console.log(error);
+
+    res.status(500).json({
+      message:
+        'Error creating post',
+      error: error.message
+    });
+  }
 });
 
 // Get posts for admin (includes drafts)
@@ -208,7 +238,28 @@ router.post(
   });
 
     await post.save();
-    res.status(201).json({ message: 'Post created successfully', post });
+
+    const populatedPost =
+        await Post.findById(post._id)
+          .populate(
+            'author',
+            'username role _id'
+          );
+
+      if (global.io) {
+
+        global.io.emit(
+          'new-post',
+          populatedPost
+        );
+      }
+
+    res.status(201).json({
+      message:
+        'Post created successfully',
+
+      post: populatedPost,
+});
   } catch (error) {
       console.log("CREATE POST ERROR:");
       console.log(error);

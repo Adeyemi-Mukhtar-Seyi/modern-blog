@@ -33,18 +33,48 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|mp4|avi|mov|mp3|wav|ogg/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
 
-  if (mimetype && extname) {
+// File filter
+const fileFilter = (
+  req,
+  file,
+  cb
+) => {
+
+  // ALLOW NO FILE
+  if (!file) {
     return cb(null, true);
+  }
+
+  const allowed =
+
+    file.mimetype.startsWith(
+      'image/'
+    ) ||
+
+    file.mimetype.startsWith(
+      'video/'
+    ) ||
+
+    file.mimetype.startsWith(
+      'audio/'
+    );
+
+  if (allowed) {
+
+    cb(null, true);
+
   } else {
-    cb(new Error('Only images, videos, and audio files are allowed!'), false);
+
+    cb(
+      new Error(
+        'Unsupported file format. Upload image, video, or audio only.'
+      ),
+      false
+    );
   }
 };
+
 
 const upload = multer({
   storage: storage,

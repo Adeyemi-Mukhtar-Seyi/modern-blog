@@ -13,9 +13,9 @@ import { useDebounce } from '../hooks/useDebounce';
 
 import { searchPosts } from '../services/postService';
 import PostCardSkeleton from '../components/skeletons/PostCardSkeleton';
-import {
-  useInfinitePosts,
-} from '../hooks/useInfinitePosts';
+import { useEffect } from 'react';
+import { socket } from '../lib/socket';
+import { useQueryClient } from '@tanstack/react-query';
 
 type HomePageProps = {
   currentPage: number;
@@ -64,6 +64,25 @@ const HomePage = ({
       }),
   });
 
+  const queryClient = useQueryClient();
+  useEffect(() => {
+
+  socket.on(
+    'new-post',
+    () => {
+
+      queryClient.invalidateQueries({
+        queryKey: ['posts'],
+      });
+    }
+  );
+
+  return () => {
+
+    socket.off('new-post');
+  };
+
+  }, [queryClient]);
   // LOADING
   if (isLoading) {
     return (
