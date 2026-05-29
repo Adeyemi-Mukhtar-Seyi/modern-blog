@@ -17,8 +17,7 @@ export const useInfinitePosts =
 
     return useInfiniteQuery({
 
-      queryKey:
-        queryKeys.posts.all,
+      queryKey: ['posts'],
 
       initialPageParam: 1,
 
@@ -37,9 +36,7 @@ export const useInfinitePosts =
       },
 
       getNextPageParam:
-        (lastPage) => {
-
-          return lastPage.nextPage;
-        },
+        (lastPage) =>
+          lastPage.nextPage,
     });
   };

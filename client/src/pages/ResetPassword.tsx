@@ -79,7 +79,7 @@ const ResetPassword = () => {
             console.log(error);
 
             alert(
-            error.response?.data?.message ||
+            error.message ||
             'Failed to resend link'
             );
         }
@@ -118,7 +118,7 @@ const ResetPassword = () => {
             console.log(error);
 
             alert(
-            error.response?.data?.message ||
+            error.message ||
             'Reset failed'
             );
         }

@@ -1,11 +1,11 @@
-import { useEffect, useRef, } from 'react';
+import { useEffect, } from 'react';
 import PostCard from '../components/PostCard';
 import PostCardSkeleton from '../components/skeletons/PostCardSkeleton';
 import { useInfinitePosts, } from '../hooks/useInfinitePosts';
 import type { Post, } from '../types';
 import { socket } from '../lib/socket';
 import { useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../constants/queryKeys';
+import { queryKeys } from '../lib/queryKeys';
 import { useInView } from 'react-intersection-observer';
 
 
@@ -15,6 +15,7 @@ const FeedPage = () => {
   const queryClient = useQueryClient();
   const { ref, inView } = useInView({
   threshold: 0,
+  rootMargin: '200px',
   });
 
   const {
@@ -28,10 +29,6 @@ const FeedPage = () => {
 
 
 
-  const observerRef =
-    useRef<HTMLDivElement | null>(
-      null
-    );
 
 
   useEffect(() => {
@@ -41,7 +38,7 @@ const FeedPage = () => {
       (newPost) => {
 
         queryClient.setQueryData(
-          queryKeys.posts.all,
+         queryKeys.posts,
 
           (oldData: any) => {
 
@@ -121,59 +118,13 @@ const FeedPage = () => {
     fetchNextPage,
   ]);
 
-  useEffect(() => {
-
-  const observer =
-    new IntersectionObserver(
-      (entries) => {
-
-        if (
-          entries[0].isIntersecting &&
-          hasNextPage &&
-          !isFetchingNextPage
-        ) {
-
-          console.log(
-            'Fetching next page...'
-          );
-
-          fetchNextPage();
-        }
-      },
-      {
-        rootMargin: '200px',
-      }
-    );
-
-  const currentRef =
-    observerRef.current;
-
-  if (currentRef) {
-
-    observer.observe(currentRef);
-  }
-
-  return () => {
-
-    if (currentRef) {
-
-      observer.unobserve(currentRef);
-    }
-  };
-
-  }, [
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  ]);
-
 
 
   const allPosts =
-    data?.pages.flatMap(
-      (page) => page.posts
+    data?.pages?.flatMap(
+      (page: any) =>
+        page?.posts || []
     ) || [];
-
 
 
   // LOADING
@@ -244,10 +195,10 @@ const FeedPage = () => {
           allPosts.map(
             (post: Post) => (
 
-              <PostCard
-                key={post._id}
-                post={post}
-              />
+            <PostCard
+              key={`${post._id}-${post.likesCount}`}
+              post={post}
+            />
             )
           )
 

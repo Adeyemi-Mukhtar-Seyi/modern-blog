@@ -12,61 +12,90 @@ export const useRealtimePosts = () => {
 
   useEffect(() => {
 
+    // NEW POSTS
     socket.on(
       'new-post',
       (newPost: Post) => {
 
-        queryClient.setQueryData(
-          queryKeys.posts,
-          (oldData: any) => {
+        queryClient.setQueriesData(
+            {
+                queryKey: queryKeys.posts,
+            },
+            (oldData: any) => {
 
-            if (!oldData) return oldData;
+                if (!oldData) {
+                return oldData;
+                }
 
-            // INFINITE QUERY SUPPORT
-            if (oldData.pages) {
+                // NORMAL QUERY SUPPORT
+                if (oldData.posts) {
 
-              return {
+                return {
 
-                ...oldData,
+                    ...oldData,
 
-                pages: oldData.pages.map(
-                  (
-                    page: any,
-                    index: number
-                  ) => {
+                    posts: [
+                    newPost,
+                    ...oldData.posts,
+                    ],
+                };
+                }
 
-                    // ONLY FIRST PAGE
-                    if (index !== 0) {
-                      return page;
+                // INFINITE QUERY SUPPORT
+                if (oldData.pages) {
+
+                return {
+
+                    ...oldData,
+
+                    pages: oldData.pages.map(
+                    (
+                        page: any,
+                        index: number
+                    ) => {
+
+                        // ONLY FIRST PAGE
+                        if (index !== 0) {
+                        return page;
+                        }
+
+                        return {
+
+                        ...page,
+
+                        posts: [
+                            newPost,
+                            ...page.posts,
+                        ],
+                        };
                     }
+                    ),
+                };
+                }
 
-                    return {
-
-                      ...page,
-
-                      posts: [
-                        newPost,
-                        ...page.posts,
-                      ],
-                    };
-                  }
-                ),
-              };
+                return oldData;
             }
-
-            // NORMAL QUERY SUPPORT
-            return [
-              newPost,
-              ...oldData,
-            ];
-          }
-        );
+            );
       }
     );
+
+
+
+    // REALTIME COMMENTS
+        socket.on(
+        'new-comment',
+        () => {
+
+            queryClient.invalidateQueries({
+            queryKey: ['comments'],
+            });
+        }
+        );
 
     return () => {
 
       socket.off('new-post');
+      socket.off('new-comment');
     };
 
   }, []);

@@ -17,6 +17,8 @@ import axiosInstance from '../api/axios';
 import { useDeletePost } from '../hooks/mutations/useDeletePost';
 import { useLikePost } from '../hooks/mutations/useLikePost';
 import toast from 'react-hot-toast';
+import ConfirmModal from './modals/ConfirmModal';
+import { useModal } from '../context/ModalContext';
 
 type PostCardProps = {
   post: Post;
@@ -35,10 +37,24 @@ const PostCard = ({
 
   const { user } = useAuth();
 
+  const { openModal, } = useModal();
+
+  const [showDeleteModal, setShowDeleteModal] =
+  React.useState(false);
+
+  console.log(
+  'POSTCARD RENDER',
+  post._id,
+  post.likesCount
+);
+
 
   // OWNER CHECK
-  const isOwner =
-    user?.id === post.author?._id;
+
+
+const isOwner =
+  user?.id ===
+  post.author?._id;
 
   // ADMIN CHECK
   const isAdmin =
@@ -49,39 +65,26 @@ const PostCard = ({
     isOwner || isAdmin;
 
   // DELETE POST
-  const handleDelete = async (
-    id: string
-  ) => {
+const handleDelete = async (
+  id: string
+) => {
 
-    const confirmed = window.confirm(
-      'Delete this post?'
+  try {
+
+    await deletePostMutation.mutateAsync(
+      id
     );
 
-    if (!confirmed) return;
+    toast.success(
+      'Post deleted successfully'
+    );
 
-    try {
+    setShowDeleteModal(false);
 
-      // REMOVE FROM UI IMMEDIATELY
-      
-
-      await deletePostMutation.mutateAsync(
-        id
-      );
-
-        toast.success(
-          'Post deleted successfully'
-        );
-
-    } catch (error: any) {
-
-      console.log(error);
-
-      toast.error(
-        error.response?.data?.message ||
-        'Delete failed'
-      );
-    }
-  };
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   // FORMAT DATE
   const formatDate = (
@@ -111,34 +114,26 @@ const PostCard = ({
       : text.substring(0, maxLength) + '...';
 
   // CHECK IF USER LIKED
-  const hasLiked = post.likes?.some(
-    (id: string) =>
-      id.toString() === user?.id
+
+ const hasLiked =
+  post.likes?.includes(
+    user?.id || ''
   );
 
   // LIKE / UNLIKE
-      const handleLike = async (
-      e: React.MouseEvent<HTMLButtonElement>
-    ) => {
 
-      e.preventDefault();
+  const handleLike = (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
 
-      if (!user) return;
+    e.preventDefault();
 
-      try {
+    if (!user) return;
 
-        await likePostMutation.mutateAsync(
-          post._id
-        );
-
-      } catch (error) {
-
-        console.error(
-          'Like error:',
-          error
-        );
-      }
-    };
+    likePostMutation.mutate(
+      post._id
+    );
+  };
 
   // SHARE POST
   const sharePost = async () => {
@@ -261,7 +256,7 @@ const PostCard = ({
 
             <button
               onClick={() =>
-                handleDelete(post._id)
+                setShowDeleteModal(true)
               }
               className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
             >
@@ -272,6 +267,23 @@ const PostCard = ({
         )}
 
       </div>
+
+      <ConfirmModal
+          isOpen={showDeleteModal}
+          title="Delete Post"
+          message="Are you sure you want to delete this post?"
+          confirmText="Delete"
+          cancelText="Cancel"
+          isLoading={
+            deletePostMutation.isPending
+          }
+          onCancel={() =>
+            setShowDeleteModal(false)
+          }
+          onConfirm={() =>
+            handleDelete(post._id)
+          }
+        />
     </div>
   );
 };

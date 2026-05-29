@@ -9,12 +9,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Post } from "../types";
 
 import axiosInstance from "../api/axios";
+import { useModal } from '../context/ModalContext';
 
 const AdminPage = () => {
 
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
+  const { openModal, } = useModal();
 
   // FETCH POSTS
   const {
@@ -50,39 +52,45 @@ const AdminPage = () => {
     postId: string
   ) => {
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this post?"
-    );
+    openModal({
+      title: 'Delete Post',
 
-    if (!confirmed) return;
+      message:
+        'Are you sure you want to delete this post?',
 
-    try {
+      onConfirm: async () => {
 
-      await axiosInstance.delete(
-        `/posts/${postId}`
-      );
+          try {
 
-      // REFRESH POSTS
-      await queryClient.invalidateQueries({
-        queryKey: ["admin-posts"],
-      });
+            await axiosInstance.delete(
+              `/posts/${postId}`
+            );
 
-      await queryClient.invalidateQueries({
-        queryKey: ["posts"],
-      });
+            // REFRESH POSTS
+            await queryClient.invalidateQueries({
+              queryKey: ["admin-posts"],
+            });
 
-      alert("Post deleted successfully");
+            await queryClient.invalidateQueries({
+              queryKey: ["posts"],
+            });
 
-    } catch (err: any) {
+            alert("Post deleted successfully");
 
-      console.error("Delete failed:", err);
+          } catch (err: any) {
 
-      alert(
-        err.response?.data?.message ||
-        "Failed to delete post"
-      );
-    }
-  };
+            console.error("Delete failed:", err);
+
+            alert(
+              err.response?.data?.message ||
+              "Failed to delete post"
+            );
+          }
+      },
+    });
+
+    return;
+      };
 
   // LOADING
   if (isLoading) {

@@ -48,7 +48,7 @@ const RegisterPage = () => {
 
       } catch (error: any) {
         setError(
-          error.response?.data?.message ||
+          error.message ||
           "Registration failed"
         );
       }

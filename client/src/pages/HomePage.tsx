@@ -204,10 +204,10 @@ const HomePage = ({
         {data?.posts?.length > 0 ? (
 
           data?.posts?.map((post: Post) => (
-            <PostCard
-              key={post._id}
-              post={post}
-            />
+          <PostCard
+            key={`${post._id}-${post.likesCount}`}
+            post={post}
+          />
           ))    
 
         ) : (

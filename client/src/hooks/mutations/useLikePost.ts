@@ -18,6 +18,7 @@ export const useLikePost = () => {
 
     // OPTIMISTIC UPDATE
     onMutate: async (postId: string) => {
+      console.log('OPTIMISTIC UPDATE');
 
       await queryClient.cancelQueries({
         queryKey: queryKeys.posts,
@@ -29,66 +30,80 @@ export const useLikePost = () => {
           queryKey: queryKeys.posts,
         });
 
-      const userId =
-        localStorage.getItem(
-          'userId'
+      const currentUser: any =
+        queryClient.getQueryData(
+          queryKeys.currentUser
         );
 
-      // UPDATE ALL POSTS QUERIES
+      const userId =
+        currentUser?._id ||
+        currentUser?.id;
+
+      if (!userId) {
+
+        return {
+          previousPosts,
+        };
+      }
+
+      // UPDATE POSTS CACHE
       queryClient.setQueriesData(
         {
           queryKey: queryKeys.posts,
         },
         (oldData: any) => {
 
-          if (!oldData) return oldData;
+          if (!oldData) {
+            return oldData;
+          }
 
           // NORMAL QUERY
-          if (oldData.posts) {
+            if (oldData.posts) {
 
-            return {
-              ...oldData,
+              return {
+                ...oldData,
 
-              posts: oldData.posts.map(
-                (post: any) => {
+                posts: oldData.posts.map(
+                  (post: any) => {
 
-                  if (
-                    post._id !== postId
-                  ) {
-                    return post;
+                    if (
+                      post._id !== postId
+                    ) {
+                      return post;
+                    }
+
+                    const hasLiked =
+                      post.likes.includes(
+                        userId
+                      );
+
+                    return {
+                      ...post,
+
+                      likes: hasLiked
+                        ? post.likes.filter(
+                            (id: string) =>
+                              id !== userId
+                          )
+                        : [
+                            ...post.likes,
+                            userId,
+                          ],
+
+                      likesCount: hasLiked
+                        ? post.likesCount - 1
+                        : post.likesCount + 1,
+                    };
                   }
-
-                  const hasLiked =
-                    post.likes.includes(
-                      userId
-                    );
-
-                  return {
-                    ...post,
-
-                    likes: hasLiked
-                      ? post.likes.filter(
-                          (id: string) =>
-                            id !== userId
-                        )
-                      : [
-                          ...post.likes,
-                          userId,
-                        ],
-
-                    likesCount: hasLiked
-                      ? post.likesCount - 1
-                      : post.likesCount + 1,
-                  };
-                }
-              ),
-            };
-          }
+                ),
+              };
+            }
 
           // INFINITE QUERY
           if (oldData.pages) {
 
             return {
+
               ...oldData,
 
               pages: oldData.pages.map(
@@ -105,12 +120,15 @@ export const useLikePost = () => {
                         return post;
                       }
 
-                      const hasLiked =
-                        post.likes.includes(
-                          userId
+                     const hasLiked =
+                        post.likes.some(
+                          (id: any) =>
+                            id.toString() ===
+                            userId.toString()
                         );
 
                       return {
+
                         ...post,
 
                         likes: hasLiked
@@ -128,10 +146,8 @@ export const useLikePost = () => {
 
                         likesCount:
                           hasLiked
-                            ? post.likesCount -
-                              1
-                            : post.likesCount +
-                              1,
+                            ? post.likesCount - 1
+                            : post.likesCount + 1,
                       };
                     }
                   ),
@@ -167,12 +183,59 @@ export const useLikePost = () => {
       );
     },
 
-    // REFETCH
-    onSettled: async () => {
+    onSuccess: (data) => {
 
-      await queryClient.invalidateQueries({
+    queryClient.setQueriesData(
+      {
         queryKey: queryKeys.posts,
-      });
-    },
+      },
+      (oldData: any) => {
+
+        if (!oldData) return oldData;
+
+        // NORMAL QUERY
+        if (oldData.posts) {
+
+          return {
+            ...oldData,
+
+            posts: oldData.posts.map(
+              (post: any) =>
+
+                post._id === data.post._id
+                  ? data.post
+                  : post
+            ),
+          };
+        }
+        
+
+        // INFINITE QUERY
+        if (oldData.pages) {
+
+          return {
+            ...oldData,
+
+            pages: oldData.pages.map(
+              (page: any) => ({
+
+                ...page,
+
+                posts: page.posts.map(
+                  (post: any) =>
+
+                    post._id === data.post._id
+                      ? data.post
+                      : post
+                ),
+              })
+            ),
+          };
+        }
+
+        return oldData;
+      }
+    );
+  },
   });
 };

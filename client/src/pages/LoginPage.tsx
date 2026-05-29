@@ -38,7 +38,7 @@ const LoginPage = () => {
       navigate("/");
     } catch (error: any) {
       setError(
-        error.response?.data?.message || "Login failed"
+        error.message || "Login failed"
       );
     };
     };

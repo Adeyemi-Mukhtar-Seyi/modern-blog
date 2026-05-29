@@ -7,8 +7,6 @@ import { createPost } from '../../api/posts';
 
 import { queryKeys } from '../../lib/queryKeys';
 
-
-
 export const useCreatePost = () => {
 
   const queryClient =
@@ -18,9 +16,11 @@ export const useCreatePost = () => {
 
     mutationFn: createPost,
 
-    onSuccess: async () => {
-
-      await queryClient.invalidateQueries({
+    onSuccess: async (
+      newPost
+    ) => {
+      // BACKGROUND REVALIDATION
+        await queryClient.refetchQueries({
         queryKey: queryKeys.posts,
       });
     },

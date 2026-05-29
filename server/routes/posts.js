@@ -428,6 +428,14 @@ router.put('/:id/like', auth, async (req, res) => {
     const updatedPost = await Post.findById(post._id)
       .populate('author', 'username role _id');
 
+      if (global.io) {
+
+        global.io.emit(
+          'post-liked',
+          updatedPost
+        );
+      }
+
     res.json({
       message: alreadyLiked ? 'Post unliked' : 'Post liked',
       post: updatedPost

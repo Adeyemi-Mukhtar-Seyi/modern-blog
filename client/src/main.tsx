@@ -18,6 +18,7 @@ import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './context/AuthContext';
 import { socket } from './lib/socket';
 import PostSocketListener from './components/socket/PostSocketListener';
+import { ModalProvider, } from './context/ModalContext';
 
 {socket.on('connect', () => {
   console.log(
@@ -31,6 +32,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+      <ModalProvider>
         <AuthProvider>
           <PostSocketListener />
            <QueryErrorResetBoundary>
@@ -59,6 +61,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           }}
         />
         </AuthProvider>
+      </ModalProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>

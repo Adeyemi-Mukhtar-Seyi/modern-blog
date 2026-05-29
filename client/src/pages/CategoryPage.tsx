@@ -60,7 +60,7 @@ const CategoryPage = () => {
       <div className="space-y-6">
         {data?.posts.map((post: any) => (
           <PostCard
-            key={post._id}
+            key={`${post._id}-${post.likesCount}`}
             post={post}
           />
         ))}

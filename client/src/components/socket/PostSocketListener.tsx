@@ -23,7 +23,7 @@ const PostSocketListener = () => {
         );
 
         queryClient.setQueryData(
-          queryKeys.posts.all,
+          ['posts'],
 
           (oldData: any) => {
 
