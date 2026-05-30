@@ -285,4 +285,6 @@ const handleDelete = async (
   );
 };
 
-export default PostCard;
+export default React.memo(
+  PostCard
+);

@@ -133,4 +133,6 @@ const MediaRenderer = ({
   return null;
 };
 
-export default MediaRenderer;
+export default React.memo(
+  MediaRenderer
+);
