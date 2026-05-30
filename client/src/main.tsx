@@ -19,13 +19,8 @@ import { AuthProvider } from './context/AuthContext';
 import { socket } from './lib/socket';
 import PostSocketListener from './components/socket/PostSocketListener';
 import { ModalProvider, } from './context/ModalContext';
+import { ReactQueryDevtools, } from '@tanstack/react-query-devtools';
 
-{socket.on('connect', () => {
-  console.log(
-    'Socket connected:',
-    socket.id
-  );
-})}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -63,7 +58,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </AuthProvider>
       </ModalProvider>
       </BrowserRouter>
-    </QueryClientProvider>
+      <ReactQueryDevtools
+          initialIsOpen={false}
+        />
+      </QueryClientProvider>
   </React.StrictMode>
 );
 

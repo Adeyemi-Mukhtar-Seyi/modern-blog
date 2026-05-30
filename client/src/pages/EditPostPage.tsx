@@ -80,10 +80,6 @@ const EditPostPage = () => {
 
         if (!isOwner && !isAdmin) {
 
-         toast.error(
-            'Unauthorized access'
-            );
-
           navigate('/');
 
           return;
@@ -173,11 +169,6 @@ const EditPostPage = () => {
     } catch (err: any) {
 
       console.log(err);
-
-      toast.error(
-        err.response?.data?.message ||
-        'Update failed'
-        );
 
     } finally {
 

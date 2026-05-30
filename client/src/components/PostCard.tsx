@@ -13,12 +13,10 @@ import { useAuth } from '../context/AuthContext';
 
 import type { Post } from '../types';
 
-import axiosInstance from '../api/axios';
 import { useDeletePost } from '../hooks/mutations/useDeletePost';
 import { useLikePost } from '../hooks/mutations/useLikePost';
-import toast from 'react-hot-toast';
+import { showSuccess, showError, } from '../utils/toast';
 import ConfirmModal from './modals/ConfirmModal';
-import { useModal } from '../context/ModalContext';
 
 type PostCardProps = {
   post: Post;
@@ -37,7 +35,6 @@ const PostCard = ({
 
   const { user } = useAuth();
 
-  const { openModal, } = useModal();
 
   const [showDeleteModal, setShowDeleteModal] =
   React.useState(false);
@@ -75,7 +72,7 @@ const handleDelete = async (
       id
     );
 
-    toast.success(
+    showSuccess(
       'Post deleted successfully'
     );
 
@@ -145,9 +142,9 @@ const handleDelete = async (
       url
     );
 
-      toast.success(
-        'Post link copied!'
-      );
+      showSuccess(
+      'Post link copied!'
+    );
   };
 
   return (

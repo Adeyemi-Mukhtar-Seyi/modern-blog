@@ -30,10 +30,6 @@ export const useCreateComment = (
         queryKey: ['comments', postId, page],
       });
     },
-
-    onError: () => {
-      toast.error('Failed to add comment');
-    },
   });
 };
 
@@ -105,8 +101,6 @@ export const useLikeComment = (
         ['comments', postId, page],
         context?.previousData
       );
-
-      toast.error('Failed to like comment');
     },
 
     onSettled: () => {
@@ -222,9 +216,6 @@ export const useDislikeComment = (
         context?.previousData
       );
 
-      toast.error(
-        'Failed to dislike comment'
-      );
     },
 
     // REFRESH

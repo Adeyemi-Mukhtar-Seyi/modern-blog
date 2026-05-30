@@ -2,7 +2,12 @@ import { useState } from 'react';
 
 import { useCreatePost } from '../hooks/mutations/useCreatePost';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import {
+  showSuccess,
+  showError,
+  showLoading,
+  dismissToast,
+} from '../utils/toast';
 
 const CreatePostPage = () => {
     const navigate = useNavigate();
@@ -60,34 +65,31 @@ const CreatePostPage = () => {
       );
     }
 
+    const toastId =
+    showLoading(
+      'Creating post...'
+    );
+
     try {
 
     await createPostMutation.mutateAsync(
         formData
     );
 
-      toast.success(
+      dismissToast(toastId);
+      showSuccess(
         'Post created successfully'
-        );
+      );
 
       navigate('/');
-
-    //   setPostForm({
-    //     title: '',
-    //     content: '',
-    //     mediaType: 'image',
-    //     mediaUrl: '',
-    //     mediaFile: null,
-    //   });
 
     } catch (err: any) {
 
       console.error(err);
 
-      toast.error(
-        err.response?.data?.message ||
-        'Failed to create post'
-        );
+      dismissToast(toastId);
+
+      showError(err);
 
     } finally {
 

@@ -1,23 +1,54 @@
 import { Routes, Route, } from 'react-router-dom';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense, } from 'react';
 
 import Header from './components/Header';
+const HomePage = lazy(
+  () => import('./pages/HomePage')
+);
 
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import AdminPage from './pages/AdminPage';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import PostDetailsPage from './pages/PostDetailsPage';
-import CategoryPage from './pages/CategoryPage';
-import CreatePostPage from './pages/CreatePostPage';
-import EditPostPage from './pages/EditPostPage';
+const LoginPage = lazy(
+  () => import('./pages/LoginPage')
+);
+
+const RegisterPage = lazy(
+  () => import('./pages/RegisterPage')
+);
+
+const AdminPage = lazy(
+  () => import('./pages/AdminPage')
+);
+
+const ForgotPassword = lazy(
+  () => import('./pages/ForgotPassword')
+);
+
+const ResetPassword = lazy(
+  () => import('./pages/ResetPassword')
+);
+
+const PostDetailsPage = lazy(
+  () => import('./pages/PostDetailsPage')
+);
+
+const CategoryPage = lazy(
+  () => import('./pages/CategoryPage')
+);
+
+const CreatePostPage = lazy(
+  () => import('./pages/CreatePostPage')
+);
+
+const EditPostPage = lazy(
+  () => import('./pages/EditPostPage')
+);
+
+const FeedPage = lazy(
+  () => import('./pages/FeedPage')
+);
 
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import FeedPage from './pages/FeedPage';
 import { useRealtimePosts, } from './hooks/useRealtimePosts';
 
 const App = () => {
@@ -33,7 +64,16 @@ const App = () => {
       <Header />
 
       <main>
-        <Routes>
+
+        <Suspense
+        fallback={
+            <div className="flex items-center justify-center py-20 text-lg font-medium">
+              Loading page...
+            </div>
+          }
+        >
+
+    <Routes>
 
           {/* HOME */}
           <Route
@@ -114,7 +154,9 @@ const App = () => {
             }
           />
 
-        </Routes>
+           </Routes>
+
+        </Suspense>
       </main>
     </div>
   );
